@@ -398,7 +398,7 @@ void CAdvancedSettings::Initialize()
 
   m_videoAssFixedWorks = false;
 
-  m_logLevelHint = m_logLevel = LOG_LEVEL_NORMAL;
+  m_logLevelHint = m_logLevel = LOG_LEVEL_DEBUG;
   m_extraLogEnabled = false;
   m_extraLogLevels = 0;
 
