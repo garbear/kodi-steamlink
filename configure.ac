@@ -628,6 +628,7 @@ case $host in
      CORE_SYSTEM_NAME=linux
      ARCH="arm"
      use_arch="arm"
+     use_joystick=yes
      use_neon=yes
      use_gles=yes
      use_gl=no
@@ -1168,6 +1169,23 @@ if test "x$use_dbus" != "xno"; then
 else
   AC_MSG_NOTICE($dbus_disabled)
 fi
+  #case "$host_vendor" != "apple"; determine availability of SDL or SDL2
+  # joystick
+  if test "$use_joystick" != "no"; then
+    PKG_CHECK_MODULES([SDL2], [sdl2],
+      [AC_DEFINE([HAVE_SDL_VERSION],[2],["SDL major version"])
+       AC_DEFINE([HAVE_SDL],[1],["Define to 1 if using sdl"])
+       INCLUDES="$INCLUDES $SDL2_CFLAGS"; LIBS="$LIBS $SDL2_LIBS"; use_joystick="yes"],
+      [if test "$use_joystick" = "yes"; then
+        AC_MSG_RESULT("SDL joystick enabled")
+      elif test "$use_joystick" != "no"; then
+        AC_MSG_NOTICE($sdl_joystick_not_found)
+        use_joystick="no"
+      fi
+     ])
+  else
+    AC_MSG_RESULT($sdl_joystick_not_found)
+  fi
 fi
 
 XB_FIND_SONAME([ASS],         [ass])
@@ -1588,7 +1606,7 @@ fi
 
 if test "${USE_STATIC_FFMPEG}" = "1"; then
   # get the libdir for static linking
-  FFMPEG_LIBDIR=${pkg_cfg_prefix}$(PKG_CONFIG_SYSROOT_DIR="" ${PKG_CONFIG} --static --variable=libdir libavcodec)
+  FFMPEG_LIBDIR=$(${PKG_CONFIG} --static --variable=libdir libavcodec)
   GNUTLS_ALL_LIBS=$(${PKG_CONFIG} --static --libs-only-l --silence-errors gnutls)
   VORBISENC_ALL_LIBS=$(${PKG_CONFIG} --static --libs-only-l --silence-errors vorbisenc)
   DCADEC_ALL_LIBS=$(${PKG_CONFIG} --static --libs-only-l --silence-errors dcadec)

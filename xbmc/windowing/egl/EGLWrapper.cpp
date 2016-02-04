@@ -34,6 +34,7 @@
   #include "EGLNativeTypeIMX.h"
 #endif
 #include "EGLNativeTypeAmlogic.h"
+#include "EGLNativeTypeSDL.h"
 #include "EGLWrapper.h"
 
 #define CheckError() m_result = eglGetError(); if(m_result != EGL_SUCCESS) CLog::Log(LOGERROR, "EGL error in %s: %x",__FUNCTION__, m_result);
@@ -88,6 +89,9 @@ bool CEGLWrapper::Initialize(const std::string &implementation)
   // Try to create each backend in sequence and go with the first one
   // that we know will work
   if (
+#if HAVE_SDL_VERSION == 2
+      (nativeGuess = CreateEGLNativeType<CEGLNativeTypeSDL>(implementation)) ||
+#endif
 #if defined(TARGET_ANDROID)
       (nativeGuess = CreateEGLNativeType<CEGLNativeTypeAmlAndroid>(implementation)) ||
       (nativeGuess = CreateEGLNativeType<CEGLNativeTypeRKAndroid>(implementation)) ||
