@@ -1778,8 +1778,9 @@ for codecs in `echo $add_codecs | sed 's/,/ /g'`; do
 done
 
 # Steam Link
-AC_CHECK_HEADERS([SLVideo.h SLAudio.h],USE_STEAMLINK=1;AC_DEFINE([HAS_STEAMLINK],[],
-  [Define if we are compiling with the Steam Link SDK]),)
+AC_CHECK_HEADERS([SLVideo.h SLAudio.h],
+  USE_STEAMLINK=1;LIBS="$LIBS -lSLVideo -lSLAudio";AC_DEFINE([HAS_STEAMLINK],[],
+    [Define if we are compiling with the Steam Link SDK]),)
 AC_SUBST(USE_STEAMLINK)
 
 # platform specific bin utilities
