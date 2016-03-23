@@ -21,6 +21,7 @@
 
 #include "SteamLinkVideo.h"
 #include "DVDVideoCodec.h"
+#include "cores/VideoPlayer/DVDStreamInfo.h"
 #include "settings/AdvancedSettings.h"
 #include "utils/log.h"
 
@@ -80,7 +81,7 @@ bool CSteamLinkVideo::Open(CDVDStreamInfo &hints, CDVDCodecOptions &options)
   CSLVideoContext* context = SLVideo_CreateContext();
   if (context)
   {
-    CSLVideoContext* stream = nullptr;
+    CSLVideoStream* stream = nullptr;
 
     switch (hints.codec)
     {

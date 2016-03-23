@@ -20,6 +20,7 @@
 #pragma once
 
 #include "cores/AudioEngine/Interfaces/AESink.h"
+#include "cores/AudioEngine/Utils/AEDeviceInfo.h"
 
 #define STEAM_LINK_SINK_NAME  "SteamLinkAudio"
 
