@@ -1777,6 +1777,11 @@ for codecs in `echo $add_codecs | sed 's/,/ /g'`; do
   esac
 done
 
+# Steam Link
+AC_CHECK_HEADERS([SLVideo.h SLAudio.h],USE_STEAMLINK=1;AC_DEFINE([HAS_STEAMLINK],[],
+  [Define if we are compiling with the Steam Link SDK]),)
+AC_SUBST(USE_STEAMLINK)
+
 # platform specific bin utilities
 if test "$build_vendor" != "apple" ; then
   AC_CHECK_PROG(HAVE_GAWK,gawk,"yes","no",)
