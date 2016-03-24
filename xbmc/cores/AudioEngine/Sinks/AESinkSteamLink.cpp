@@ -29,7 +29,7 @@
 #include <cstring>
 
 #define SL_SAMPLE_RATE  48000 // TODO
-#define SINK_FEED_MS    250 // TODO
+#define SINK_FEED_MS    100 // TODO
 
 using namespace STEAMLINK;
 
