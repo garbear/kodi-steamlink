@@ -167,7 +167,7 @@ void CAESinkSteamLink::GetDelay(AEDelayStatus &status)
   double seconds = (double)frames / m_format.m_sampleRate;
   //status.SetDelay(seconds);
   */
-  status.SetDelay(0); // TODO
+  status.SetDelay(0); // TODO: SLAudio_GetQueuedAudioSamples() is expensive
 }
 
 void CAESinkSteamLink::Drain()
