@@ -37,6 +37,8 @@ namespace
 {
   void LogFunction(void *pContext, ESLAudioLog eLogLevel, const char *pszMessage)
   {
+    CLog::Log(LOGDEBUG, "SteamLinkAudio: %s", __FUNCTION__);
+
     // TODO: Problem that log messages end with a newline?
     switch (eLogLevel)
     {
@@ -62,6 +64,8 @@ CAESinkSteamLink::CAESinkSteamLink() :
   m_context(nullptr),
   m_stream(nullptr)
 {
+  CLog::Log(LOGDEBUG, "SteamLinkAudio: %s", __FUNCTION__);
+
   // TODO: Refcount to allow logging with multiple instances
   SLAudio_SetLogLevel(k_ESLAudioLogDebug);
   SLAudio_SetLogFunction(LogFunction, nullptr);
@@ -69,12 +73,16 @@ CAESinkSteamLink::CAESinkSteamLink() :
 
 CAESinkSteamLink::~CAESinkSteamLink()
 {
+  CLog::Log(LOGDEBUG, "SteamLinkAudio: %s", __FUNCTION__);
+
   Deinitialize();
   SLAudio_SetLogFunction(nullptr, nullptr);
 }
 
 bool CAESinkSteamLink::Initialize(AEAudioFormat &format, std::string &device)
 {
+  CLog::Log(LOGDEBUG, "SteamLinkAudio: %s", __FUNCTION__);
+
   Deinitialize();
 
   format.m_dataFormat    = AE_FMT_S16NE;
@@ -107,6 +115,8 @@ bool CAESinkSteamLink::Initialize(AEAudioFormat &format, std::string &device)
 
 void CAESinkSteamLink::Deinitialize()
 {
+  CLog::Log(LOGDEBUG, "SteamLinkAudio: %s", __FUNCTION__);
+
   if (m_stream)
   {
     SLAudio_FreeStream(static_cast<CSLAudioStream*>(m_stream));
@@ -121,20 +131,25 @@ void CAESinkSteamLink::Deinitialize()
 
 double CAESinkSteamLink::GetCacheTotal()
 {
-  return SINK_FEED_MS / 1000.0; // TODO
+  CLog::Log(LOGDEBUG, "SteamLinkAudio: %s", __FUNCTION__);
+
+  return 0.0; // SINK_FEED_MS / 1000.0; // TODO
 }
 
 unsigned int CAESinkSteamLink::AddPackets(uint8_t **data, unsigned int frames, unsigned int offset)
 {
   unsigned int i;
-  for (i = 0; i < frames; i++)
+  for (i = offset; i < frames; i++)
   {
     void* buffer = SLAudio_BeginFrame(static_cast<CSLAudioStream*>(m_stream));
+
     if (buffer)
-    {
-      std::memcpy(buffer, data[i] + offset, m_format.m_frameSize); // TODO: offset?
-      SLAudio_SubmitFrame(static_cast<CSLAudioStream*>(m_stream));
-    }
+      std::memcpy(buffer, data[0] + i * m_format.m_frameSize, m_format.m_frameSize); // TODO: offset?
+
+    SLAudio_SubmitFrame(static_cast<CSLAudioStream*>(m_stream));
+
+    if (!buffer)
+      break;
   }
 
   return i;
@@ -142,6 +157,7 @@ unsigned int CAESinkSteamLink::AddPackets(uint8_t **data, unsigned int frames, u
 
 void CAESinkSteamLink::GetDelay(AEDelayStatus &status)
 {
+  /*
   uint32_t samples = SLAudio_GetQueuedAudioSamples(static_cast<CSLAudioStream*>(m_stream));
 
   unsigned int frames = samples / m_format.m_channelLayout.Count();
@@ -149,21 +165,27 @@ void CAESinkSteamLink::GetDelay(AEDelayStatus &status)
     frames++;
 
   double seconds = (double)frames / m_format.m_sampleRate;
-  status.SetDelay(seconds);
+  //status.SetDelay(seconds);
+  */
+  status.SetDelay(0); // TODO
 }
 
 void CAESinkSteamLink::Drain()
 {
+  CLog::Log(LOGDEBUG, "SteamLinkAudio: %s", __FUNCTION__);
+
   // TODO
 }
 
 void CAESinkSteamLink::EnumerateDevicesEx(AEDeviceInfoList &deviceInfoList)
 {
+  CLog::Log(LOGDEBUG, "SteamLinkAudio: %s", __FUNCTION__);
+
   CAEDeviceInfo info;
 
   info.m_deviceType = AE_DEVTYPE_PCM;
   info.m_deviceName = "SteamLink";
-  info.m_displayName = "Low Latency Audio";
+  info.m_displayName = "Steam Link Low Latency Audio";
   info.m_displayNameExtra = "";
   info.m_channels += AE_CH_FL;
   info.m_channels += AE_CH_FR;
