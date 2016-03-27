@@ -20,7 +20,6 @@
  */
 
 #include "AESinkSteamLink.h"
-#include "cores/AudioEngine/Utils/AEUtil.h"
 #include "utils/log.h"
 
 // Steam Link audio API
@@ -29,8 +28,8 @@
 #include <cstring>
 #include <unistd.h>
 
-#define SL_SAMPLE_RATE  48000 // TODO
-#define SINK_FEED_MS    50 // TODO
+#define SL_SAMPLE_RATE  48000
+#define SINK_FEED_MS    50 // Steam Link game streaming uses 10ms
 
 using namespace STEAMLINK;
 
@@ -65,8 +64,6 @@ CAESinkSteamLink::CAESinkSteamLink() :
   m_context(nullptr),
   m_stream(nullptr)
 {
-  CLog::Log(LOGDEBUG, "SteamLinkAudio: %s", __FUNCTION__);
-
   // TODO: Refcount to allow logging with multiple instances
   SLAudio_SetLogLevel(k_ESLAudioLogDebug);
   SLAudio_SetLogFunction(LogFunction, nullptr);
@@ -74,19 +71,16 @@ CAESinkSteamLink::CAESinkSteamLink() :
 
 CAESinkSteamLink::~CAESinkSteamLink()
 {
-  CLog::Log(LOGDEBUG, "SteamLinkAudio: %s", __FUNCTION__);
-
   Deinitialize();
   SLAudio_SetLogFunction(nullptr, nullptr);
 }
 
 bool CAESinkSteamLink::Initialize(AEAudioFormat &format, std::string &device)
 {
-  CLog::Log(LOGDEBUG, "SteamLinkAudio: %s", __FUNCTION__);
-
   Deinitialize();
 
   format.m_dataFormat    = AE_FMT_S16NE;
+  format.m_sampleRate    = SL_SAMPLE_RATE;
   format.m_frames        = format.m_sampleRate * SINK_FEED_MS / 1000;
   format.m_frameSize     = format.m_channelLayout.Count() * (CAEUtil::DataFormatToBits(format.m_dataFormat) >> 3);
   m_format = format;
@@ -94,7 +88,7 @@ bool CAESinkSteamLink::Initialize(AEAudioFormat &format, std::string &device)
   CSLAudioContext* context = SLAudio_CreateContext();
   if (context)
   {
-    CSLAudioStream* stream = SLAudio_CreateStream(context, m_format.m_sampleRate, m_format.m_channelLayout.Count(), format.m_frameSize);
+    CSLAudioStream* stream = SLAudio_CreateStream(context, m_format.m_sampleRate, m_format.m_channelLayout.Count(), format.m_frames * format.m_frameSize);
     if (stream)
     {
       m_context = context;
@@ -116,8 +110,6 @@ bool CAESinkSteamLink::Initialize(AEAudioFormat &format, std::string &device)
 
 void CAESinkSteamLink::Deinitialize()
 {
-  CLog::Log(LOGDEBUG, "SteamLinkAudio: %s", __FUNCTION__);
-
   if (m_stream)
   {
     SLAudio_FreeStream(static_cast<CSLAudioStream*>(m_stream));
@@ -132,63 +124,48 @@ void CAESinkSteamLink::Deinitialize()
 
 double CAESinkSteamLink::GetCacheTotal()
 {
-  CLog::Log(LOGDEBUG, "SteamLinkAudio: %s", __FUNCTION__);
-
-  return SINK_FEED_MS / 1000.0 * 4;
+  return SINK_FEED_MS / 1000.0 * 4; // Large enough
 }
 
 unsigned int CAESinkSteamLink::AddPackets(uint8_t **data, unsigned int frames, unsigned int offset)
 {
-  unsigned int i;
-  for (i = offset; i < frames; i++)
-  {
-    void* buffer = SLAudio_BeginFrame(static_cast<CSLAudioStream*>(m_stream));
+  void* buffer = SLAudio_BeginFrame(static_cast<CSLAudioStream*>(m_stream));
+  std::memcpy(buffer, data[0] + offset * m_format.m_frameSize, (frames - offset) * m_format.m_frameSize);
+  SLAudio_SubmitFrame(static_cast<CSLAudioStream*>(m_stream));
 
-    std::memcpy(buffer, data[0] + i * m_format.m_frameSize, m_format.m_frameSize);
+  double delaySecs = GetDelaySecs();
+  m_delay.SetDelay(delaySecs);
 
-    SLAudio_SubmitFrame(static_cast<CSLAudioStream*>(m_stream));
-  }
+  // Sleep until 1 chunk is left
+  unsigned int delayUs = (unsigned int)(delaySecs * 1000 * 1000);
+  if (delayUs > SINK_FEED_MS * 1000)
+    usleep(delayUs - SINK_FEED_MS * 1000);
 
-  unsigned int delayUs = i * 1000 * 1000 / m_format.m_sampleRate;
-  if (delayUs > 0)
-    usleep(delayUs);
-
-  return i;
+  return frames - offset;
 }
 
 void CAESinkSteamLink::GetDelay(AEDelayStatus &status)
 {
-  status.SetDelay(0.0); // TODO
+  status = m_delay;
 }
 
 void CAESinkSteamLink::Drain()
 {
-  CLog::Log(LOGDEBUG, "SteamLinkAudio: %s", __FUNCTION__);
-
-  /*
   unsigned int usecs = (unsigned int)(GetDelaySecs() * 1000 * 1000);
   if (usecs > 0)
     usleep(usecs);
-  */
 }
 
 double CAESinkSteamLink::GetDelaySecs()
 {
-  uint32_t samples = SLAudio_GetQueuedAudioSamples(static_cast<CSLAudioStream*>(m_stream));
-
-  unsigned int frames = samples / m_format.m_channelLayout.Count();
-  if (samples % m_format.m_channelLayout.Count() != 0)
-    frames++;
-
-  CLog::Log(LOGDEBUG, "SteamLinkAudio: Frames: %u", frames);
+  // Expensive, but every 10ms-50ms is OK
+  uint32_t frames = SLAudio_GetQueuedAudioSamples(static_cast<CSLAudioStream*>(m_stream));
 
   return (double)frames / m_format.m_sampleRate;
 }
 
 void CAESinkSteamLink::EnumerateDevicesEx(AEDeviceInfoList &deviceInfoList)
 {
-  CLog::Log(LOGDEBUG, "SteamLinkAudio: %s", __FUNCTION__);
-
   CAEDeviceInfo info;
 
   info.m_deviceType = AE_DEVTYPE_PCM;
