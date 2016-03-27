@@ -46,6 +46,8 @@ public:
   static void EnumerateDevicesEx(AEDeviceInfoList &deviceInfoList);
 
 private:
+  double GetDelaySecs(); // Get delay in seconds
+
   // AE stuff
   AEAudioFormat m_format;
 

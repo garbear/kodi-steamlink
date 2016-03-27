@@ -27,9 +27,10 @@
 #include "SLAudio.h"
 
 #include <cstring>
+#include <unistd.h>
 
 #define SL_SAMPLE_RATE  48000 // TODO
-#define SINK_FEED_MS    100 // TODO
+#define SINK_FEED_MS    50 // TODO
 
 using namespace STEAMLINK;
 
@@ -133,7 +134,7 @@ double CAESinkSteamLink::GetCacheTotal()
 {
   CLog::Log(LOGDEBUG, "SteamLinkAudio: %s", __FUNCTION__);
 
-  return 0.0; // SINK_FEED_MS / 1000.0; // TODO
+  return SINK_FEED_MS / 1000.0 * 4;
 }
 
 unsigned int CAESinkSteamLink::AddPackets(uint8_t **data, unsigned int frames, unsigned int offset)
@@ -143,38 +144,45 @@ unsigned int CAESinkSteamLink::AddPackets(uint8_t **data, unsigned int frames, u
   {
     void* buffer = SLAudio_BeginFrame(static_cast<CSLAudioStream*>(m_stream));
 
-    if (buffer)
-      std::memcpy(buffer, data[0] + i * m_format.m_frameSize, m_format.m_frameSize); // TODO: offset?
+    std::memcpy(buffer, data[0] + i * m_format.m_frameSize, m_format.m_frameSize);
 
     SLAudio_SubmitFrame(static_cast<CSLAudioStream*>(m_stream));
-
-    if (!buffer)
-      break;
   }
+
+  unsigned int delayUs = i * 1000 * 1000 / m_format.m_sampleRate;
+  if (delayUs > 0)
+    usleep(delayUs);
 
   return i;
 }
 
 void CAESinkSteamLink::GetDelay(AEDelayStatus &status)
 {
-  /*
-  uint32_t samples = SLAudio_GetQueuedAudioSamples(static_cast<CSLAudioStream*>(m_stream));
-
-  unsigned int frames = samples / m_format.m_channelLayout.Count();
-  if (samples % m_format.m_channelLayout.Count() != 0)
-    frames++;
-
-  double seconds = (double)frames / m_format.m_sampleRate;
-  //status.SetDelay(seconds);
-  */
-  status.SetDelay(0); // TODO: SLAudio_GetQueuedAudioSamples() is expensive
+  status.SetDelay(0.0); // TODO
 }
 
 void CAESinkSteamLink::Drain()
 {
   CLog::Log(LOGDEBUG, "SteamLinkAudio: %s", __FUNCTION__);
 
-  // TODO
+  /*
+  unsigned int usecs = (unsigned int)(GetDelaySecs() * 1000 * 1000);
+  if (usecs > 0)
+    usleep(usecs);
+  */
+}
+
+double CAESinkSteamLink::GetDelaySecs()
+{
+  uint32_t samples = SLAudio_GetQueuedAudioSamples(static_cast<CSLAudioStream*>(m_stream));
+
+  unsigned int frames = samples / m_format.m_channelLayout.Count();
+  if (samples % m_format.m_channelLayout.Count() != 0)
+    frames++;
+
+  CLog::Log(LOGDEBUG, "SteamLinkAudio: Frames: %u", frames);
+
+  return (double)frames / m_format.m_sampleRate;
 }
 
 void CAESinkSteamLink::EnumerateDevicesEx(AEDeviceInfoList &deviceInfoList)
@@ -190,8 +198,8 @@ void CAESinkSteamLink::EnumerateDevicesEx(AEDeviceInfoList &deviceInfoList)
   info.m_channels += AE_CH_FL;
   info.m_channels += AE_CH_FR;
   info.m_sampleRates.push_back(SL_SAMPLE_RATE);
-  info.m_dataFormats.push_back(AE_FMT_S16LE);
-  info.m_wantsIECPassthrough = false; // TODO
+  info.m_dataFormats.push_back(AE_FMT_S16NE);
+  info.m_wantsIECPassthrough = false;
 
   deviceInfoList.push_back(info);
 }
