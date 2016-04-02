@@ -31,6 +31,7 @@
 
 #define SL_SAMPLE_RATE  48000
 #define SINK_FEED_MS    50 // Steam Link game streaming uses 10ms
+#define CACHE_TOTAL_MS  200
 
 using namespace STEAMLINK;
 
@@ -125,7 +126,7 @@ void CAESinkSteamLink::Deinitialize()
 
 double CAESinkSteamLink::GetCacheTotal()
 {
-  return SINK_FEED_MS / 1000.0 * 4; // Large enough
+  return CACHE_TOTAL_MS / 1000.0;
 }
 
 unsigned int CAESinkSteamLink::AddPackets(uint8_t **data, unsigned int frames, unsigned int offset)
@@ -134,10 +135,8 @@ unsigned int CAESinkSteamLink::AddPackets(uint8_t **data, unsigned int frames, u
   std::memcpy(buffer, data[0] + offset * m_format.m_frameSize, (frames - offset) * m_format.m_frameSize);
   SLAudio_SubmitFrame(static_cast<CSLAudioStream*>(m_stream));
 
-  // Sleep until 1 chunk is left
-  unsigned int delayUs = (unsigned int)(GetDelaySecs() * 1000 * 1000);
-  if (delayUs > SINK_FEED_MS * 1000)
-    usleep(delayUs - SINK_FEED_MS * 1000);
+  if (GetDelaySecs() > GetCacheTotal())
+    usleep(SINK_FEED_MS * 1000);
 
   return frames - offset;
 }
