@@ -20,6 +20,7 @@
  */
 
 #include "AESinkSteamLink.h"
+#include "cores/AudioEngine/Utils/AEUtil.h"
 #include "utils/log.h"
 
 // Steam Link audio API
@@ -133,11 +134,8 @@ unsigned int CAESinkSteamLink::AddPackets(uint8_t **data, unsigned int frames, u
   std::memcpy(buffer, data[0] + offset * m_format.m_frameSize, (frames - offset) * m_format.m_frameSize);
   SLAudio_SubmitFrame(static_cast<CSLAudioStream*>(m_stream));
 
-  double delaySecs = GetDelaySecs();
-  m_delay.SetDelay(delaySecs);
-
   // Sleep until 1 chunk is left
-  unsigned int delayUs = (unsigned int)(delaySecs * 1000 * 1000);
+  unsigned int delayUs = (unsigned int)(GetDelaySecs() * 1000 * 1000);
   if (delayUs > SINK_FEED_MS * 1000)
     usleep(delayUs - SINK_FEED_MS * 1000);
 
@@ -146,7 +144,7 @@ unsigned int CAESinkSteamLink::AddPackets(uint8_t **data, unsigned int frames, u
 
 void CAESinkSteamLink::GetDelay(AEDelayStatus &status)
 {
-  status = m_delay;
+  status.SetDelay(GetDelaySecs());
 }
 
 void CAESinkSteamLink::Drain()

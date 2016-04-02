@@ -21,7 +21,6 @@
 
 #include "cores/AudioEngine/Interfaces/AESink.h"
 #include "cores/AudioEngine/Utils/AEDeviceInfo.h"
-#include "cores/AudioEngine/Utils/AEUtil.h"
 
 #define STEAM_LINK_SINK_NAME  "SteamLinkAudio"
 
@@ -51,7 +50,6 @@ private:
 
   // AE stuff
   AEAudioFormat m_format;
-  AEDelayStatus m_delay;
 
   // Steam Link stuff
   void* m_context;
