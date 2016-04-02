@@ -30,8 +30,8 @@
 #include <unistd.h>
 
 #define SL_SAMPLE_RATE  48000
-#define SINK_FEED_MS    50 // Steam Link game streaming uses 10ms
-#define CACHE_TOTAL_MS  200
+#define SINK_FEED_MS    20 // Steam Link game streaming uses 10ms
+#define CACHE_TOTAL_MS  100
 
 using namespace STEAMLINK;
 
@@ -135,8 +135,21 @@ unsigned int CAESinkSteamLink::AddPackets(uint8_t **data, unsigned int frames, u
   std::memcpy(buffer, data[0] + offset * m_format.m_frameSize, (frames - offset) * m_format.m_frameSize);
   SLAudio_SubmitFrame(static_cast<CSLAudioStream*>(m_stream));
 
-  if (GetDelaySecs() > GetCacheTotal())
-    usleep(SINK_FEED_MS * 1000);
+  const double delaySecs = GetDelaySecs();
+
+  const double availableSecs = GetCacheTotal() - delaySecs;
+
+  const int sleepTimeUs = (int)((SINK_FEED_MS / 1000.0 - availableSecs) * 1000 * 1000);
+
+  /*
+  if (sleepTimeUs > 0)
+    CLog::Log(LOGDEBUG, "Added %u ms (Delay = %u ms, sleeping %u ms)", (frames - offset) * 1000 / m_format.m_sampleRate, (unsigned int)(delaySecs * 1000), sleepTimeUs / 1000);
+  else
+    CLog::Log(LOGDEBUG, "Added %u ms (Delay = %u ms)", (frames - offset) * 1000 / m_format.m_sampleRate, (unsigned int)(delaySecs * 1000));
+  */
+
+  if (sleepTimeUs > 0)
+    usleep(sleepTimeUs);
 
   return frames - offset;
 }
@@ -156,9 +169,11 @@ void CAESinkSteamLink::Drain()
 double CAESinkSteamLink::GetDelaySecs()
 {
   // Expensive, but every 10ms-50ms is OK
-  uint32_t frames = SLAudio_GetQueuedAudioSamples(static_cast<CSLAudioStream*>(m_stream));
+  //uint32_t frames = SLAudio_GetQueuedAudioSamples(static_cast<CSLAudioStream*>(m_stream));
 
-  return (double)frames / m_format.m_sampleRate;
+  //return (double)frames / m_format.m_sampleRate; // 800ms delay, http://paste.ubuntu.com/15587451/
+
+  return GetCacheTotal();
 }
 
 void CAESinkSteamLink::EnumerateDevicesEx(AEDeviceInfoList &deviceInfoList)
