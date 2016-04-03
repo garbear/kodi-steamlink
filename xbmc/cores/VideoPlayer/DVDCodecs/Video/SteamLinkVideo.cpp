@@ -21,12 +21,16 @@
 
 #include "SteamLinkVideo.h"
 #include "DVDVideoCodec.h"
+#include "cores/VideoPlayer/DVDClock.h"
 #include "cores/VideoPlayer/DVDStreamInfo.h"
 #include "settings/AdvancedSettings.h"
 #include "utils/log.h"
 
 // Steam Link video API
 #include "SLVideo.h"
+
+#include <cstring>
+#include <unistd.h> // for usleep()
 
 using namespace STEAMLINK;
 
@@ -141,12 +145,55 @@ int CSteamLinkVideo::Decode(uint8_t *pData, int iSize, double dts, double pts)
 {
   int ret = VC_ERROR;
 
+  if (!pData || iSize == 0)
+    return ret;
+
   if (BeginFrame(iSize))
   {
     if (WriteFrameData(pData, iSize))
     {
       if (SubmitFrame())
+      {
         ret = VC_PICTURE;
+
+        /*
+        if (pts == DVD_NOPTS_VALUE)
+        {
+          CLog::Log(LOGDEBUG, "SteamLinkVideo: No pts");
+          ret = VC_BUFFER;
+        }
+        else
+        {
+          CLog::Log(LOGDEBUG, "SteamLinkVideo: Picture!!!!!!!!!!!!!");
+        }
+
+        /*
+        if (CDVDClock::GetAbsoluteClock() < pts)
+        {
+          CDVDClock::WaitAbsoluteClock(pts * DVD_TIME_BASE);
+          ret = VC_PICTURE;
+        }
+        else
+        {
+          ret = VC_BUFFER;
+        }
+
+        /*
+        const double nowSec = CDVDClock::GetAbsoluteClock() / DVD_TIME_BASE;
+        const double ptsSec = pts;// / DVD_TIME_BASE;
+        if (nowSec <= ptsSec)
+        {
+          CLog::Log(LOGDEBUG, "SteamLinkVideo: Sleeping %u ms and showing", (unsigned int)((ptsSec - nowSec) * 1000));
+          CDVDClock::WaitAbsoluteClock(pts * DVD_TIME_BASE);
+          ret = VC_PICTURE;
+        }
+        else
+        {
+          CLog::Log(LOGDEBUG, "SteamLinkVideo: Buffering");
+          ret = VC_BUFFER;
+        }
+        */
+      }
       else
         CLog::Log(LOGERROR, "%s: Error submitting frame", GetName());
     }
@@ -174,8 +221,10 @@ bool CSteamLinkVideo::GetPicture(DVDVideoPicture *pDvdVideoPicture)
   int height = 0;
   GetDisplayResolution(width, height);
 
-  memset(pDvdVideoPicture, 0, sizeof(*pDvdVideoPicture));
+  std::memset(pDvdVideoPicture, 0, sizeof(*pDvdVideoPicture));
 
+  pDvdVideoPicture->dts = DVD_NOPTS_VALUE;
+  pDvdVideoPicture->pts = DVD_NOPTS_VALUE;
   pDvdVideoPicture->iWidth = width;
   pDvdVideoPicture->iHeight= height;
   pDvdVideoPicture->iDisplayWidth = width;

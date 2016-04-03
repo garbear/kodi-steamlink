@@ -22,16 +22,17 @@
 #include "AESinkSteamLink.h"
 #include "cores/AudioEngine/Utils/AEUtil.h"
 #include "utils/log.h"
+#include "utils/TimeUtils.h"
 
 // Steam Link audio API
 #include "SLAudio.h"
 
 #include <cstring>
-#include <unistd.h>
+#include <unistd.h> // for usleep
 
 #define SL_SAMPLE_RATE  48000
-#define SINK_FEED_MS    20 // Steam Link game streaming uses 10ms
-#define CACHE_TOTAL_MS  100
+#define SINK_FEED_MS    50 // Steam Link game streaming uses 10ms
+#define CACHE_TOTAL_MS  200
 
 using namespace STEAMLINK;
 
@@ -63,6 +64,8 @@ namespace
 }
 
 CAESinkSteamLink::CAESinkSteamLink() :
+  m_lastPackageStamp(0.0),
+  m_delaySec(0.0),
   m_context(nullptr),
   m_stream(nullptr)
 {
@@ -93,6 +96,7 @@ bool CAESinkSteamLink::Initialize(AEAudioFormat &format, std::string &device)
     CSLAudioStream* stream = SLAudio_CreateStream(context, m_format.m_sampleRate, m_format.m_channelLayout.Count(), format.m_frames * format.m_frameSize);
     if (stream)
     {
+      // Success
       m_context = context;
       m_stream = stream;
     }
@@ -131,25 +135,43 @@ double CAESinkSteamLink::GetCacheTotal()
 
 unsigned int CAESinkSteamLink::AddPackets(uint8_t **data, unsigned int frames, unsigned int offset)
 {
-  void* buffer = SLAudio_BeginFrame(static_cast<CSLAudioStream*>(m_stream));
-  std::memcpy(buffer, data[0] + offset * m_format.m_frameSize, (frames - offset) * m_format.m_frameSize);
-  SLAudio_SubmitFrame(static_cast<CSLAudioStream*>(m_stream));
+  const double packetTimeSecs = 1.0 * (frames - offset) / m_format.m_sampleRate;
 
-  const double delaySecs = GetDelaySecs();
+  const double slDelaySecs = GetSLDelaySecs();
 
-  const double availableSecs = GetCacheTotal() - delaySecs;
+  // Update delay for elapsed time
+  const double nowSecs = (double)CurrentHostCounter() / CurrentHostFrequency();
+  if (m_lastPackageStamp > 0.0)
+  {
+    const double elapsedSecs = nowSecs - m_lastPackageStamp;
+    m_delaySec -= elapsedSecs;
+    if (m_delaySec < 0.0)
+      m_delaySec = 0.0;
+  }
+  m_lastPackageStamp = nowSecs;
+
+  // Ensure space in the buffer
+  const double availableSecs = GetCacheTotal() - GetDelaySecs();
 
   const int sleepTimeUs = (int)((SINK_FEED_MS / 1000.0 - availableSecs) * 1000 * 1000);
 
   /*
   if (sleepTimeUs > 0)
-    CLog::Log(LOGDEBUG, "Added %u ms (Delay = %u ms, sleeping %u ms)", (frames - offset) * 1000 / m_format.m_sampleRate, (unsigned int)(delaySecs * 1000), sleepTimeUs / 1000);
+    CLog::Log(LOGDEBUG, "Adding %u ms (Delay = %u ms, SL = %u ms, sleeping %u ms)", (unsigned int)(packetTimeSecs * 1000), (unsigned int)(m_delaySec * 1000), (unsigned int)(slDelaySecs * 1000), sleepTimeUs / 1000);
   else
-    CLog::Log(LOGDEBUG, "Added %u ms (Delay = %u ms)", (frames - offset) * 1000 / m_format.m_sampleRate, (unsigned int)(delaySecs * 1000));
+    CLog::Log(LOGDEBUG, "Adding %u ms (Delay = %u ms, SL = %u ms)", (unsigned int)(packetTimeSecs * 1000), (unsigned int)(m_delaySec * 1000), (unsigned int)(slDelaySecs * 1000));
   */
 
   if (sleepTimeUs > 0)
     usleep(sleepTimeUs);
+
+  // Add the audio data
+  void* buffer = SLAudio_BeginFrame(static_cast<CSLAudioStream*>(m_stream));
+  std::memcpy(buffer, data[0] + offset * m_format.m_frameSize, (frames - offset) * m_format.m_frameSize);
+  SLAudio_SubmitFrame(static_cast<CSLAudioStream*>(m_stream));
+
+  // Increase the delay for the added packet
+  m_delaySec += packetTimeSecs;
 
   return frames - offset;
 }
@@ -164,16 +186,22 @@ void CAESinkSteamLink::Drain()
   unsigned int usecs = (unsigned int)(GetDelaySecs() * 1000 * 1000);
   if (usecs > 0)
     usleep(usecs);
+
+  m_lastPackageStamp = 0.0;
+  m_delaySec = 0.0;
 }
 
 double CAESinkSteamLink::GetDelaySecs()
 {
+  return m_delaySec;
+}
+
+double CAESinkSteamLink::GetSLDelaySecs()
+{
   // Expensive, but every 10ms-50ms is OK
-  //uint32_t frames = SLAudio_GetQueuedAudioSamples(static_cast<CSLAudioStream*>(m_stream));
+  uint32_t frames = SLAudio_GetQueuedAudioSamples(static_cast<CSLAudioStream*>(m_stream));
 
-  //return (double)frames / m_format.m_sampleRate; // 800ms delay, http://paste.ubuntu.com/15587451/
-
-  return GetCacheTotal();
+  return (double)frames / m_format.m_sampleRate;
 }
 
 void CAESinkSteamLink::EnumerateDevicesEx(AEDeviceInfoList &deviceInfoList)

@@ -22,6 +22,8 @@
 #include "cores/AudioEngine/Interfaces/AESink.h"
 #include "cores/AudioEngine/Utils/AEDeviceInfo.h"
 
+#include <stdint.h>
+
 #define STEAM_LINK_SINK_NAME  "SteamLinkAudio"
 
 namespace STEAMLINK
@@ -46,10 +48,13 @@ public:
   static void EnumerateDevicesEx(AEDeviceInfoList &deviceInfoList);
 
 private:
-  double GetDelaySecs(); // Get delay in seconds
+  double GetDelaySecs();
+  double GetSLDelaySecs(); // Get steam link delay in seconds
 
   // AE stuff
   AEAudioFormat m_format;
+  double        m_lastPackageStamp;
+  double        m_delaySec; // Estimated delay in seconds
 
   // Steam Link stuff
   void* m_context;
