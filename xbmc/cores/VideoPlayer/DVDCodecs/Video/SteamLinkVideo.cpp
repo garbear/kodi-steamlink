@@ -30,7 +30,6 @@
 #include "SLVideo.h"
 
 #include <cstring>
-#include <unistd.h> // for usleep()
 
 using namespace STEAMLINK;
 
@@ -171,9 +170,20 @@ int CSteamLinkVideo::Decode(uint8_t *pData, int iSize, double dts, double pts)
   }
 
   if (bFrameShown)
+  {
     ret = VC_PICTURE;
+    /*
+    if (pts == DVD_NOPTS_VALUE)
+      CLog::Log(LOGDEBUG, "%s: Frame shown without pts", GetName());
+    else
+      CLog::Log(LOGDEBUG, "%s: Frame shown with pts=%f", GetName(), pts);
+    */
+  }
   else
+  {
     ret = VC_BUFFER;
+    //CLog::Log(LOGDEBUG, "%s: Buffering", GetName());
+  }
 
   return ret;
 }
@@ -192,7 +202,7 @@ bool CSteamLinkVideo::GetPicture(DVDVideoPicture *pDvdVideoPicture)
   std::memset(pDvdVideoPicture, 0, sizeof(*pDvdVideoPicture));
 
   pDvdVideoPicture->dts = DVD_NOPTS_VALUE;
-  pDvdVideoPicture->pts = m_currentPts;
+  pDvdVideoPicture->pts = DVD_NOPTS_VALUE;//m_currentPts;
   pDvdVideoPicture->iWidth = width;
   pDvdVideoPicture->iHeight= height;
   pDvdVideoPicture->iDisplayWidth = width;

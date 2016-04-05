@@ -51,7 +51,7 @@ private:
   bool SubmitFrame();
 
   // VideoPlayer data
-  double   m_currentPts;
+  double m_currentPts;
 
   // Steam Link data
   void* m_context;
