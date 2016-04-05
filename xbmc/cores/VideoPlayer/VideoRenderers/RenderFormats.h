@@ -43,6 +43,7 @@ enum ERenderFormat {
   RENDER_FMT_IMXMAP,
   RENDER_FMT_MMAL,
   RENDER_FMT_AML,
+  RENDER_FMT_STEAMLINK,
 };
 
 struct CRenderInfo

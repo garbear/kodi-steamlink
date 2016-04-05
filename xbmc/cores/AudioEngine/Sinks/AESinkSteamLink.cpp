@@ -137,7 +137,7 @@ unsigned int CAESinkSteamLink::AddPackets(uint8_t **data, unsigned int frames, u
 {
   const double packetTimeSecs = 1.0 * (frames - offset) / m_format.m_sampleRate;
 
-  const double slDelaySecs = GetSLDelaySecs();
+  //const double slDelaySecs = GetSLDelaySecs();
 
   // Update delay for elapsed time
   const double nowSecs = (double)CurrentHostCounter() / CurrentHostFrequency();

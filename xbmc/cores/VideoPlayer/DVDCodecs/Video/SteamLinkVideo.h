@@ -45,9 +45,13 @@ public:
 private:
   // Steam Link functions
   void GetDisplayResolution(int &iWidth, int &iHeight);
+  bool AddPacket(uint8_t* pData, int iSize);
   bool BeginFrame(int nFrameSize);
   bool WriteFrameData(void *pData, int nDataSize);
   bool SubmitFrame();
+
+  // VideoPlayer data
+  double   m_currentPts;
 
   // Steam Link data
   void* m_context;

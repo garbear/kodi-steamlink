@@ -61,6 +61,7 @@ namespace
 
 CSteamLinkVideo::CSteamLinkVideo(CProcessInfo &processInfo) :
   CDVDVideoCodec(processInfo),
+  m_currentPts(DVD_NOPTS_VALUE),
   m_context(nullptr),
   m_stream(nullptr)
 {
@@ -143,69 +144,36 @@ void CSteamLinkVideo::Dispose()
 
 int CSteamLinkVideo::Decode(uint8_t *pData, int iSize, double dts, double pts)
 {
+  if (!pData || iSize == 0)
+    return VC_BUFFER;
+
   int ret = VC_ERROR;
 
-  if (!pData || iSize == 0)
+  if (!AddPacket(pData, iSize))
     return ret;
 
-  if (BeginFrame(iSize))
+  // Guess if a frame was shown
+  bool bFrameShown = false;
+  if (pts == DVD_NOPTS_VALUE)
   {
-    if (WriteFrameData(pData, iSize))
-    {
-      if (SubmitFrame())
-      {
-        ret = VC_PICTURE;
-
-        /*
-        if (pts == DVD_NOPTS_VALUE)
-        {
-          CLog::Log(LOGDEBUG, "SteamLinkVideo: No pts");
-          ret = VC_BUFFER;
-        }
-        else
-        {
-          CLog::Log(LOGDEBUG, "SteamLinkVideo: Picture!!!!!!!!!!!!!");
-        }
-
-        /*
-        if (CDVDClock::GetAbsoluteClock() < pts)
-        {
-          CDVDClock::WaitAbsoluteClock(pts * DVD_TIME_BASE);
-          ret = VC_PICTURE;
-        }
-        else
-        {
-          ret = VC_BUFFER;
-        }
-
-        /*
-        const double nowSec = CDVDClock::GetAbsoluteClock() / DVD_TIME_BASE;
-        const double ptsSec = pts;// / DVD_TIME_BASE;
-        if (nowSec <= ptsSec)
-        {
-          CLog::Log(LOGDEBUG, "SteamLinkVideo: Sleeping %u ms and showing", (unsigned int)((ptsSec - nowSec) * 1000));
-          CDVDClock::WaitAbsoluteClock(pts * DVD_TIME_BASE);
-          ret = VC_PICTURE;
-        }
-        else
-        {
-          CLog::Log(LOGDEBUG, "SteamLinkVideo: Buffering");
-          ret = VC_BUFFER;
-        }
-        */
-      }
-      else
-        CLog::Log(LOGERROR, "%s: Error submitting frame", GetName());
-    }
-    else
-    {
-      CLog::Log(LOGERROR, "%s: Tried to write more data than expected", GetName()); // TODO
-    }
+    // Assume a frame was shown until we encounter a valid pts
+    if (m_currentPts == DVD_NOPTS_VALUE)
+      bFrameShown = true;
   }
   else
   {
-    CLog::Log(LOGERROR, "%s: Failed to begin frame", GetName());
+    // Assume a frame was shown when pts changes
+    if (m_currentPts != pts)
+    {
+      bFrameShown = true;
+      m_currentPts = pts;
+    }
   }
+
+  if (bFrameShown)
+    ret = VC_PICTURE;
+  else
+    ret = VC_BUFFER;
 
   return ret;
 }
@@ -224,12 +192,12 @@ bool CSteamLinkVideo::GetPicture(DVDVideoPicture *pDvdVideoPicture)
   std::memset(pDvdVideoPicture, 0, sizeof(*pDvdVideoPicture));
 
   pDvdVideoPicture->dts = DVD_NOPTS_VALUE;
-  pDvdVideoPicture->pts = DVD_NOPTS_VALUE;
+  pDvdVideoPicture->pts = m_currentPts;
   pDvdVideoPicture->iWidth = width;
   pDvdVideoPicture->iHeight= height;
   pDvdVideoPicture->iDisplayWidth = width;
   pDvdVideoPicture->iDisplayHeight= height;
-  pDvdVideoPicture->format = RENDER_FMT_BYPASS;
+  pDvdVideoPicture->format = RENDER_FMT_STEAMLINK;
 
   return true;
 }
@@ -237,6 +205,33 @@ bool CSteamLinkVideo::GetPicture(DVDVideoPicture *pDvdVideoPicture)
 void CSteamLinkVideo::GetDisplayResolution(int &iWidth, int &iHeight)
 {
   SLVideo_GetDisplayResolution(static_cast<CSLVideoContext*>(m_context), &iWidth, &iHeight);
+}
+
+bool CSteamLinkVideo::AddPacket(uint8_t* pData, int iSize)
+{
+  bool ret = true;
+
+  if (!BeginFrame(iSize))
+  {
+    CLog::Log(LOGERROR, "%s: Failed to begin frame", GetName());
+    ret = false;
+  }
+  else
+  {
+    if (!WriteFrameData(pData, iSize))
+    {
+      CLog::Log(LOGERROR, "%s: Tried to write more data than expected", GetName());
+      ret = false;
+    }
+
+    if (!SubmitFrame())
+    {
+      CLog::Log(LOGERROR, "%s: Error submitting frame", GetName());
+      ret = false;
+    }
+  }
+
+  return ret;
 }
 
 bool CSteamLinkVideo::BeginFrame(int nFrameSize)

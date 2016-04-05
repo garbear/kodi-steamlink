@@ -914,23 +914,20 @@ int CVideoPlayerVideo::OutputPicture(const DVDVideoPicture* src, double pts)
 
   ProcessOverlays(pPicture, pts_org);
 
-  if (pPicture->format != RENDER_FMT_BYPASS)
+  int index = m_renderManager.AddVideoPicture(*pPicture);
+
+  // video device might not be done yet
+  while (index < 0 && !m_bAbortOutput &&
+         CDVDClock::GetAbsoluteClock(false) < iCurrentClock + iSleepTime + DVD_MSEC_TO_TIME(500) )
   {
-    int index = m_renderManager.AddVideoPicture(*pPicture);
+    Sleep(1);
+    index = m_renderManager.AddVideoPicture(*pPicture);
+  }
 
-    // video device might not be done yet
-    while (index < 0 && !m_bAbortOutput &&
-           CDVDClock::GetAbsoluteClock(false) < iCurrentClock + iSleepTime + DVD_MSEC_TO_TIME(500) )
-    {
-      Sleep(1);
-      index = m_renderManager.AddVideoPicture(*pPicture);
-    }
-
-    if (index < 0)
-    {
-      m_droppingStats.AddOutputDropGain(pts, 1/m_fFrameRate);
-      return EOS_DROPPED;
-    }
+  if (index < 0)
+  {
+    m_droppingStats.AddOutputDropGain(pts, 1/m_fFrameRate);
+    return EOS_DROPPED;
   }
 
   m_renderManager.FlipPage(m_bAbortOutput, (iCurrentClock + iSleepTime) / DVD_TIME_BASE, pts_org, -1, mDisplayField);
