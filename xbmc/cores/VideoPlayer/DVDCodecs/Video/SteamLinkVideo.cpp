@@ -170,20 +170,9 @@ int CSteamLinkVideo::Decode(uint8_t *pData, int iSize, double dts, double pts)
   }
 
   if (bFrameShown)
-  {
     ret = VC_PICTURE;
-    /*
-    if (pts == DVD_NOPTS_VALUE)
-      CLog::Log(LOGDEBUG, "%s: Frame shown without pts", GetName());
-    else
-      CLog::Log(LOGDEBUG, "%s: Frame shown with pts=%f", GetName(), pts);
-    */
-  }
   else
-  {
     ret = VC_BUFFER;
-    //CLog::Log(LOGDEBUG, "%s: Buffering", GetName());
-  }
 
   return ret;
 }
