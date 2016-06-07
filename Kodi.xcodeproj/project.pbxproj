@@ -253,6 +253,10 @@
 		5EB3113C1A978B9B00551907 /* CueInfoLoader.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 5EB3113A1A978B9B00551907 /* CueInfoLoader.cpp */; };
 		5EE4F9181A9FF36F002E20F8 /* CueInfoLoader.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 5EB3113A1A978B9B00551907 /* CueInfoLoader.cpp */; };
 		5EF801001A97892A0035AA4D /* ReplayGain.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 5EF800FE1A97892A0035AA4D /* ReplayGain.cpp */; };
+		681EC47E1D07143200EF5898 /* SteamLinkVideo.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 681EC47C1D07143200EF5898 /* SteamLinkVideo.cpp */; };
+		681EC47F1D07143200EF5898 /* SteamLinkVideo.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 681EC47C1D07143200EF5898 /* SteamLinkVideo.cpp */; };
+		681EC4821D07145A00EF5898 /* RendererSteamLink.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 681EC4801D07145A00EF5898 /* RendererSteamLink.cpp */; };
+		681EC4831D07145A00EF5898 /* RendererSteamLink.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 681EC4801D07145A00EF5898 /* RendererSteamLink.cpp */; };
 		68AE5BA51C92412900C4D527 /* AddonCallbacksPeripheral.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 68AE5BA31C92412900C4D527 /* AddonCallbacksPeripheral.cpp */; };
 		68AE5BA61C92412900C4D527 /* AddonCallbacksPeripheral.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 68AE5BA31C92412900C4D527 /* AddonCallbacksPeripheral.cpp */; };
 		68AE5BBD1C9241DF00C4D527 /* DefaultJoystick.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 68AE5BAC1C9241DF00C4D527 /* DefaultJoystick.cpp */; };
@@ -2730,6 +2734,10 @@
 		5EB3113B1A978B9B00551907 /* CueInfoLoader.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = CueInfoLoader.h; sourceTree = "<group>"; };
 		5EF800FE1A97892A0035AA4D /* ReplayGain.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = ReplayGain.cpp; sourceTree = "<group>"; };
 		5EF800FF1A97892A0035AA4D /* ReplayGain.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = ReplayGain.h; sourceTree = "<group>"; };
+		681EC47C1D07143200EF5898 /* SteamLinkVideo.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = SteamLinkVideo.cpp; sourceTree = "<group>"; };
+		681EC47D1D07143200EF5898 /* SteamLinkVideo.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = SteamLinkVideo.h; sourceTree = "<group>"; };
+		681EC4801D07145A00EF5898 /* RendererSteamLink.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = RendererSteamLink.cpp; path = HwDecRender/RendererSteamLink.cpp; sourceTree = "<group>"; };
+		681EC4811D07145A00EF5898 /* RendererSteamLink.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = RendererSteamLink.h; path = HwDecRender/RendererSteamLink.h; sourceTree = "<group>"; };
 		68AE5BA01C923E5300C4D527 /* kodi_vfs_utils.hpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.h; name = kodi_vfs_utils.hpp; path = "kodi-addon-dev-kit/include/kodi/kodi_vfs_utils.hpp"; sourceTree = "<group>"; };
 		68AE5BA31C92412900C4D527 /* AddonCallbacksPeripheral.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = AddonCallbacksPeripheral.cpp; path = addons/binary/interfaces/api1/Peripheral/AddonCallbacksPeripheral.cpp; sourceTree = "<group>"; };
 		68AE5BA41C92412900C4D527 /* AddonCallbacksPeripheral.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = AddonCallbacksPeripheral.h; path = addons/binary/interfaces/api1/Peripheral/AddonCallbacksPeripheral.h; sourceTree = "<group>"; };
@@ -6369,6 +6377,8 @@
 		7CCA95BA1BC6E6450091D308 /* HwDecRender */ = {
 			isa = PBXGroup;
 			children = (
+				681EC4801D07145A00EF5898 /* RendererSteamLink.cpp */,
+				681EC4811D07145A00EF5898 /* RendererSteamLink.h */,
 				7CCA95BB1BC6E6670091D308 /* RendererVDA.cpp */,
 				7CCA95BC1BC6E6670091D308 /* RendererVDA.h */,
 				7CCA95BD1BC6E6670091D308 /* RendererVTB.cpp */,
@@ -7952,6 +7962,8 @@
 				E4991590174E6ABE00741B6D /* DVDVideoCodecVideoToolBox.h */,
 				E38E15410D25F9F900618676 /* DVDVideoPPFFmpeg.cpp */,
 				E38E15420D25F9F900618676 /* DVDVideoPPFFmpeg.h */,
+				681EC47C1D07143200EF5898 /* SteamLinkVideo.cpp */,
+				681EC47D1D07143200EF5898 /* SteamLinkVideo.h */,
 				551C3A43175A12010051AAAD /* VDA.cpp */,
 				551C3A44175A12010051AAAD /* VDA.h */,
 			);
@@ -9629,6 +9641,7 @@
 				E38E1F910D25F9FD00618676 /* DVDDemux.cpp in Sources */,
 				7C8E023A1BA35D0B0072E8B2 /* PlayerBuiltins.cpp in Sources */,
 				80204F121C91CD3600E8C88B /* InputStreamMultiSource.cpp in Sources */,
+				681EC4821D07145A00EF5898 /* RendererSteamLink.cpp in Sources */,
 				E38E1F940D25F9FD00618676 /* DVDDemuxUtils.cpp in Sources */,
 				E38E1F970D25F9FD00618676 /* DVDDemuxSPU.cpp in Sources */,
 				E38E1F980D25F9FD00618676 /* DVDFactoryInputStream.cpp in Sources */,
@@ -10061,6 +10074,7 @@
 				7C8A14571154CB2600E5FCFA /* TextureCache.cpp in Sources */,
 				7C8A187D115B2A8200E5FCFA /* TextureDatabase.cpp in Sources */,
 				F52BFFDB115D5574004B1D66 /* AddonStatusHandler.cpp in Sources */,
+				681EC47E1D07143200EF5898 /* SteamLinkVideo.cpp in Sources */,
 				C85EB75C1174614E0008E5A5 /* Repository.cpp in Sources */,
 				F52B063B11869862004B1D66 /* Skin.cpp in Sources */,
 				F50FDC5A119B4B2C00C8B8CD /* GUIDialogTextViewer.cpp in Sources */,
@@ -11001,6 +11015,7 @@
 				E499128C174E5D9900741B6D /* DirectoryNodeSongTop100.cpp in Sources */,
 				E499128D174E5D9900741B6D /* DirectoryNodeTop100.cpp in Sources */,
 				E499128E174E5D9900741B6D /* DirectoryNodeYearAlbum.cpp in Sources */,
+				681EC47F1D07143200EF5898 /* SteamLinkVideo.cpp in Sources */,
 				E499128F174E5D9900741B6D /* DirectoryNodeYearSong.cpp in Sources */,
 				E4991290174E5D9900741B6D /* QueryParams.cpp in Sources */,
 				E4991291174E5D9900741B6D /* MusicDatabaseDirectory.cpp in Sources */,
@@ -11365,6 +11380,7 @@
 				E4991400174E5FB000741B6D /* GUIDialogPVRGuideSearch.cpp in Sources */,
 				E4991401174E5FB000741B6D /* GUIDialogPVRRecordingInfo.cpp in Sources */,
 				E4991402174E5FB000741B6D /* GUIDialogPVRTimerSettings.cpp in Sources */,
+				681EC4831D07145A00EF5898 /* RendererSteamLink.cpp in Sources */,
 				E4991403174E5FB900741B6D /* PVRRecording.cpp in Sources */,
 				E4991404174E5FB900741B6D /* PVRRecordings.cpp in Sources */,
 				E4991405174E5FB900741B6D /* PVRTimerInfoTag.cpp in Sources */,
