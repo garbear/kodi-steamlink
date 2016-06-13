@@ -30,7 +30,7 @@
 #include "utils/StringUtils.h"
 
 // Steam Link video API
-//#include "SLVideo.h"
+#include "SLVideo.h"
 
 #include <cstring>
 
@@ -42,7 +42,6 @@ using namespace XFILE;
 
 namespace
 {
-  /*
   void LogFunction(void *pContext, ESLVideoLog eLogLevel, const char *pszMessage)
   {
     // TODO: Problem that log messages end with a newline?
@@ -64,7 +63,6 @@ namespace
       break;
     }
   }
-  */
 }
 
 CSteamLinkVideo::CSteamLinkVideo(CProcessInfo &processInfo) :
@@ -75,14 +73,14 @@ CSteamLinkVideo::CSteamLinkVideo(CProcessInfo &processInfo) :
   m_packetCount(0)
 {
   // TODO: Refcount to allow logging with multiple instances
-  //SLVideo_SetLogLevel(g_advancedSettings.CanLogComponent(LOGVIDEO) ? k_ESLVideoLogDebug : k_ESLVideoLogError);
-  //SLVideo_SetLogFunction(LogFunction, nullptr);
+  SLVideo_SetLogLevel(g_advancedSettings.CanLogComponent(LOGVIDEO) ? k_ESLVideoLogDebug : k_ESLVideoLogError);
+  SLVideo_SetLogFunction(LogFunction, nullptr);
 }
 
 CSteamLinkVideo::~CSteamLinkVideo()
 {
   Dispose();
-  //SLVideo_SetLogFunction(nullptr, nullptr);
+  SLVideo_SetLogFunction(nullptr, nullptr);
 }
 
 bool CSteamLinkVideo::Open(CDVDStreamInfo &hints, CDVDCodecOptions &options)
@@ -267,7 +265,7 @@ bool CSteamLinkVideo::AddPacket(uint8_t* pData, int iSize)
 bool CSteamLinkVideo::BeginFrame(int nFrameSize)
 {  //return SLVideo_BeginFrame(static_cast<CSLVideoStream*>(m_stream), nFrameSize) == 0;
   unsigned int time = SystemClockMillis();
-  std::string strFileName = StringUtils::Format("%s/%d_%d.03%d.dat", m_directory.c_str(), m_packetCount, time / 1000, time % 1000);
+  std::string strFileName = StringUtils::Format("%s/%d_%d.%03d.dat", m_directory.c_str(), m_packetCount, time / 1000, time % 1000);
 
   return m_file.OpenForWrite(strFileName);
 }

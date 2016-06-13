@@ -81,8 +81,6 @@
   #define HAS_MDNS_EMBEDDED
 #endif
 
-#define HAS_STEAMLINK
-
 /**********************
  * Non-free Components
  **********************/
