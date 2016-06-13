@@ -21,6 +21,9 @@
 #pragma once
 
 #include "DVDVideoCodec.h"
+#include "filesystem/File.h"
+
+#include <string>
 
 #define STEAMLINK_VIDEO_CODEC_NAME  "SteamLinkVideo"
 
@@ -56,6 +59,9 @@ private:
   // Steam Link data
   void* m_context;
   void* m_stream;
+  std::string m_directory;
+  XFILE::CFile m_file;
+  unsigned int m_packetCount;
 };
 
 }

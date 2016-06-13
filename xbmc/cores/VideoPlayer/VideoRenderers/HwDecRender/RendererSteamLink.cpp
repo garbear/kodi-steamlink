@@ -22,25 +22,12 @@
 #include "RendererSteamLink.h"
 #include "utils/log.h"
 
-#include <GLES2/gl2.h>
+#include <OpenGL/gl.h>
 
 using namespace STEAMLINK;
 
 bool CRendererSteamLink::LoadShadersHook()
 {
   CLog::Log(LOGNOTICE, "CRendererSteamLink: Using STEAMLINK render method");
-  m_textureTarget = GL_TEXTURE_2D;
-  m_renderMethod = RENDER_BYPASS;
   return false;
-}
-
-bool CRendererSteamLink::RenderUpdateVideoHook(bool clear, DWORD flags, DWORD alpha)
-{
-  ManageDisplay();
-  return true;
-}
-
-int CRendererSteamLink::GetImageHook(YV12Image *image, int source /* = AUTOSOURCE */, bool readonly /* = false */)
-{
-  return source;
 }

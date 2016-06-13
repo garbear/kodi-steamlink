@@ -23,18 +23,26 @@
 #include "DVDVideoCodec.h"
 #include "cores/VideoPlayer/DVDClock.h"
 #include "cores/VideoPlayer/DVDStreamInfo.h"
+#include "filesystem/Directory.h"
 #include "settings/AdvancedSettings.h"
+#include "threads/SystemClock.h"
 #include "utils/log.h"
+#include "utils/StringUtils.h"
 
 // Steam Link video API
-#include "SLVideo.h"
+//#include "SLVideo.h"
 
 #include <cstring>
 
 using namespace STEAMLINK;
+using namespace XbmcThreads;
+using namespace XFILE;
+
+#define VIDEO_DIRECTORY  "special://profile/video"
 
 namespace
 {
+  /*
   void LogFunction(void *pContext, ESLVideoLog eLogLevel, const char *pszMessage)
   {
     // TODO: Problem that log messages end with a newline?
@@ -56,23 +64,25 @@ namespace
       break;
     }
   }
+  */
 }
 
 CSteamLinkVideo::CSteamLinkVideo(CProcessInfo &processInfo) :
   CDVDVideoCodec(processInfo),
   m_currentPts(DVD_NOPTS_VALUE),
   m_context(nullptr),
-  m_stream(nullptr)
+  m_stream(nullptr),
+  m_packetCount(0)
 {
   // TODO: Refcount to allow logging with multiple instances
-  SLVideo_SetLogLevel(g_advancedSettings.CanLogComponent(LOGVIDEO) ? k_ESLVideoLogDebug : k_ESLVideoLogError);
-  SLVideo_SetLogFunction(LogFunction, nullptr);
+  //SLVideo_SetLogLevel(g_advancedSettings.CanLogComponent(LOGVIDEO) ? k_ESLVideoLogDebug : k_ESLVideoLogError);
+  //SLVideo_SetLogFunction(LogFunction, nullptr);
 }
 
 CSteamLinkVideo::~CSteamLinkVideo()
 {
   Dispose();
-  SLVideo_SetLogFunction(nullptr, nullptr);
+  //SLVideo_SetLogFunction(nullptr, nullptr);
 }
 
 bool CSteamLinkVideo::Open(CDVDStreamInfo &hints, CDVDCodecOptions &options)
@@ -82,6 +92,22 @@ bool CSteamLinkVideo::Open(CDVDStreamInfo &hints, CDVDCodecOptions &options)
 
   Dispose();
 
+  unsigned int i = 0;
+
+  do
+  {
+    m_directory = StringUtils::Format("%s/%d", VIDEO_DIRECTORY, i++);
+  } while (CDirectory::Exists(m_directory));
+
+  CLog::Log(LOGDEBUG, "%s: Using video directory %s", GetName(), m_directory.c_str());
+
+  if (!CDirectory::Create(m_directory))
+  {
+    CLog::Log(LOGERROR, "%s: Failed to create directory", GetName());
+    return false;
+  }
+
+  /*
   CSLVideoContext* context = SLVideo_CreateContext();
   if (context)
   {
@@ -123,12 +149,14 @@ bool CSteamLinkVideo::Open(CDVDStreamInfo &hints, CDVDCodecOptions &options)
   {
     CLog::Log(LOGERROR, "%s: Failed to create context", GetName());
   }
+  */
 
-  return m_context != nullptr;
+  return true;
 }
 
 void CSteamLinkVideo::Dispose()
 {
+  /*
   if (m_stream)
   {
     SLVideo_FreeStream(static_cast<CSLVideoStream*>(m_stream));
@@ -139,6 +167,7 @@ void CSteamLinkVideo::Dispose()
     SLVideo_FreeContext(static_cast<CSLVideoContext*>(m_context));
     m_context = nullptr;
   }
+  */
 }
 
 int CSteamLinkVideo::Decode(uint8_t *pData, int iSize, double dts, double pts)
@@ -203,7 +232,9 @@ bool CSteamLinkVideo::GetPicture(DVDVideoPicture *pDvdVideoPicture)
 
 void CSteamLinkVideo::GetDisplayResolution(int &iWidth, int &iHeight)
 {
-  SLVideo_GetDisplayResolution(static_cast<CSLVideoContext*>(m_context), &iWidth, &iHeight);
+  //SLVideo_GetDisplayResolution(static_cast<CSLVideoContext*>(m_context), &iWidth, &iHeight);
+  iWidth = 640;
+  iHeight = 360;
 }
 
 bool CSteamLinkVideo::AddPacket(uint8_t* pData, int iSize)
@@ -234,16 +265,23 @@ bool CSteamLinkVideo::AddPacket(uint8_t* pData, int iSize)
 }
 
 bool CSteamLinkVideo::BeginFrame(int nFrameSize)
-{
-  return SLVideo_BeginFrame(static_cast<CSLVideoStream*>(m_stream), nFrameSize) == 0;
+{  //return SLVideo_BeginFrame(static_cast<CSLVideoStream*>(m_stream), nFrameSize) == 0;
+  unsigned int time = SystemClockMillis();
+  std::string strFileName = StringUtils::Format("%s/%d_%d.03%d.dat", m_directory.c_str(), m_packetCount, time / 1000, time % 1000);
+
+  return m_file.OpenForWrite(strFileName);
 }
 
 bool CSteamLinkVideo::WriteFrameData(void *pData, int nDataSize)
 {
-  return SLVideo_WriteFrameData(static_cast<CSLVideoStream*>(m_stream), pData, nDataSize) == 0;
+  //return SLVideo_WriteFrameData(static_cast<CSLVideoStream*>(m_stream), pData, nDataSize) == 0;
+  return m_file.Write(pData, nDataSize) == nDataSize;
 }
 
 bool CSteamLinkVideo::SubmitFrame()
 {
-  return SLVideo_SubmitFrame(static_cast<CSLVideoStream*>(m_stream)) == 0;
+  //return SLVideo_SubmitFrame(static_cast<CSLVideoStream*>(m_stream)) == 0;
+  m_file.Close();
+  m_packetCount++;
+  return true;
 }

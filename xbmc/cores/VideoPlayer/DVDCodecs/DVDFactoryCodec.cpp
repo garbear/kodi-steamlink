@@ -153,6 +153,8 @@ CDVDVideoCodec* CDVDFactoryCodec::CreateVideoCodec(CDVDStreamInfo &hint, CProces
 
 #if defined(HAS_IMXVPU)
     pCodec = OpenCodec(new CDVDVideoCodecIMX(processInfo), hint, options);
+#elif defined(HAS_STEAMLINK)
+    pCodec = OpenCodec(new STEAMLINK::CSteamLinkVideo(processInfo), hint, options);
 #elif defined(HAVE_VIDEOTOOLBOXDECODER)
     pCodec = OpenCodec(new CDVDVideoCodecVideoToolBox(processInfo), hint, options);
 #elif defined(TARGET_ANDROID)
@@ -161,8 +163,6 @@ CDVDVideoCodec* CDVDFactoryCodec::CreateVideoCodec(CDVDStreamInfo &hint, CProces
     pCodec = OpenCodec(new CDVDVideoCodecOpenMax(processInfo), hint, options);
 #elif defined(HAS_MMAL)
     pCodec = OpenCodec(new CMMALVideo(processInfo), hint, options);
-#elif defined(HAS_STEAMLINK)
-    pCodec = OpenCodec(new STEAMLINK::CSteamLinkVideo(processInfo), hint, options);
 #endif
     if (pCodec)
       return pCodec;

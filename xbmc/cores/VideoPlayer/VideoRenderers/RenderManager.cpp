@@ -648,6 +648,12 @@ void CRenderManager::CreateRenderer()
       m_pRenderer = new CRendererVAAPI;
 #endif
     }
+    else if (m_format == RENDER_FMT_STEAMLINK)
+    {
+#if defined(HAS_STEAMLINK)
+      m_pRenderer = new STEAMLINK::CRendererSteamLink;
+#endif
+    }
     else if (m_format == RENDER_FMT_VDPAU || m_format == RENDER_FMT_VDPAU_420)
     {
 #if defined(HAVE_LIBVDPAU)
@@ -702,12 +708,6 @@ void CRenderManager::CreateRenderer()
     {
 #if defined(HAS_LIBAMCODEC)
       m_pRenderer = new CRendererAML;
-#endif
-    }
-    else if (m_format == RENDER_FMT_STEAMLINK)
-    {
-#if defined(HAS_STEAMLINK)
-      m_pRenderer = new STEAMLINK::CRendererSteamLink;
 #endif
     }
     else if (m_format != RENDER_FMT_NONE)

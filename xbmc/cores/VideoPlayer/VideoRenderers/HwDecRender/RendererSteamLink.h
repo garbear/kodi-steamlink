@@ -22,12 +22,12 @@
 
 #include "system.h" // for HAS_GLES, needed for LinuxRendererGLES.h
 
-#include "cores/VideoPlayer/VideoRenderers/LinuxRendererGLES.h"
+#include "cores/VideoPlayer/VideoRenderers/LinuxRendererGL.h"
 
 namespace STEAMLINK
 {
 
-class CRendererSteamLink : public CLinuxRendererGLES
+class CRendererSteamLink : public CLinuxRendererGL
 {
 public:
   CRendererSteamLink() { }
@@ -46,8 +46,6 @@ protected:
   // implementation of CLinuxRendererGLES
   virtual bool LoadShadersHook() override;
   virtual bool RenderHook(int index) override { return true; }
-  virtual bool RenderUpdateVideoHook(bool clear, DWORD flags = 0, DWORD alpha = 255) override;
-  virtual int  GetImageHook(YV12Image *image, int source = AUTOSOURCE, bool readonly = false) override;
 };
 
 }
