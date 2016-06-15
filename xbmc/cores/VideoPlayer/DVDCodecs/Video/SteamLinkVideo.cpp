@@ -265,7 +265,7 @@ bool CSteamLinkVideo::AddPacket(uint8_t* pData, int iSize)
 bool CSteamLinkVideo::BeginFrame(int nFrameSize)
 {  //return SLVideo_BeginFrame(static_cast<CSLVideoStream*>(m_stream), nFrameSize) == 0;
   unsigned int time = SystemClockMillis();
-  std::string strFileName = StringUtils::Format("%s/%d_%d.%03d.dat", m_directory.c_str(), m_packetCount, time / 1000, time % 1000);
+  std::string strFileName = StringUtils::Format("%s/%04d_%03d.%03d.dat", m_directory.c_str(), m_packetCount, time / 1000, time % 1000);
 
   return m_file.OpenForWrite(strFileName);
 }
