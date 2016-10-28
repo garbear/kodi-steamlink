@@ -1,6 +1,7 @@
 INCLUDES=-I.
 
 SRCS = WinSystemEGL.cpp
+SRCS+= EGLNativeTypeSDL.cpp
 SRCS+= EGLNativeTypeAmlogic.cpp
 ifeq (@USE_ANDROID@,1)
 SRCS+= EGLNativeTypeAndroid.cpp

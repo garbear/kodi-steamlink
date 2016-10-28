@@ -50,6 +50,9 @@
 #elif defined(HAS_SDL)
   #include "LinuxRenderer.h"
 #endif
+#if defined(HAS_STEAMLINK)
+  #include "SteamLinkRenderer.h"
+#endif
 
 #include "RenderCapture.h"
 
@@ -449,7 +452,9 @@ unsigned int CXBMCRenderManager::PreInit()
   m_bIsStarted = false;
   if (!m_pRenderer)
   {
-#if defined(HAS_GL)
+#if defined(HAS_STEAMLINK)
+    m_pRenderer = new STEAMLINK::CSteamLinkRenderer();
+#elif defined(HAS_GL)
     m_pRenderer = new CLinuxRendererGL();
 #elif defined(HAS_MMAL)
     m_pRenderer = new CMMALRenderer();

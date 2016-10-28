@@ -931,6 +931,7 @@ static std::string GetRenderFormatName(ERenderFormat format)
     case RENDER_FMT_MEDIACODECSURFACE:return "MEDIACODECSURFACE";
     case RENDER_FMT_IMXMAP:    return "IMXMAP";
     case RENDER_FMT_MMAL:      return "MMAL";
+    case RENDER_FMT_STEAMLINK: return "STEAMLINK";
     case RENDER_FMT_NONE:      return "NONE";
   }
   return "UNKNOWN";

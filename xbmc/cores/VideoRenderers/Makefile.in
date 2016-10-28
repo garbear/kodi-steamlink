@@ -24,6 +24,10 @@ ifeq (@USE_MMAL@,1)
 SRCS += MMALRenderer.cpp
 endif
 
+ifeq (@USE_STEAMLINK@,1)
+SRCS += SteamLinkRenderer.cpp
+endif
+
 LIB = VideoRenderer.a
 
 include @abs_top_srcdir@/Makefile.include

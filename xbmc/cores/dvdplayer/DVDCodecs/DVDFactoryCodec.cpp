@@ -50,6 +50,9 @@
 #include "Video/DVDVideoCodecAndroidMediaCodec.h"
 #include "android/activity/AndroidFeatures.h"
 #endif
+#if defined(HAS_STEAMLINK)
+#include "Video/SteamLinkVideo.h"
+#endif
 #include "Audio/DVDAudioCodecFFmpeg.h"
 #include "Audio/DVDAudioCodecPassthrough.h"
 #include "Overlay/DVDOverlayCodecSSA.h"
@@ -199,6 +202,12 @@ CDVDVideoCodec* CDVDFactoryCodec::CreateVideoCodec(CDVDStreamInfo &hint, const C
 #else
   hwSupport += "MMAL:no ";
 #endif
+#if defined(HAS_STEAMLINK)
+  hwSupport += "SteamLink:yes ";
+#else
+  hwSupport += "SteamLink:no ";
+#endif
+
   CLog::Log(LOGDEBUG, "CDVDFactoryCodec: compiled in hardware support: %s", hwSupport.c_str());
 
   if (hint.stills && (hint.codec == AV_CODEC_ID_MPEG2VIDEO || hint.codec == AV_CODEC_ID_MPEG1VIDEO))
@@ -336,6 +345,10 @@ CDVDVideoCodec* CDVDFactoryCodec::CreateVideoCodec(CDVDStreamInfo &hint, const C
           if ( (pCodec = OpenCodec(new CDVDVideoCodecStageFright(), hint, options)) ) return pCodec;
       }
     }
+#endif
+
+#if defined(HAS_STEAMLINK)
+    if ( (pCodec = OpenCodec(new STEAMLINK::CSteamLinkVideo(), hint, options)) ) return pCodec;
 #endif
 
 

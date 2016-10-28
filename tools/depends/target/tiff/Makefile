@@ -9,7 +9,7 @@ ARCHIVE=$(SOURCE).tar.gz
 
 # configuration settings
 CONFIGURE=cp -f $(CONFIG_SUB) $(CONFIG_GUESS) config/; \
-          ./configure --prefix=$(PREFIX) --disable-shared
+          CFLAGS="$(CFLAGS) -fPIC" ./configure --prefix=$(PREFIX) --disable-shared
 
 LIBDYLIB=$(PLATFORM)/libtiff/.libs/lib$(LIBNAME).a
 

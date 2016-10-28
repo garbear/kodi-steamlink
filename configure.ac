@@ -649,7 +649,7 @@ case $host in
      target_platform=target_linux
      ARCH="arm"
      use_arch="arm"
-     use_joystick=no
+     #use_joystick=no
      use_neon=yes
      use_gles=yes
      use_gl=no
@@ -1267,7 +1267,7 @@ fi
        AC_DEFINE([HAVE_SDL],[1],["Define to 1 if using sdl"])
        INCLUDES="$INCLUDES $SDL2_CFLAGS"; LIBS="$LIBS $SDL2_LIBS"; use_joystick="yes"],
       [if test "$use_joystick" = "yes"; then
-        AC_MSG_ERROR($sdl_joystick_not_found)
+        AC_MSG_RESULT("SDL joystick enabled")
       elif test "$use_joystick" != "no"; then
         AC_MSG_NOTICE($sdl_joystick_not_found)
         use_joystick="no"
@@ -1301,6 +1301,16 @@ else
   use_alsa="no"
   AC_MSG_RESULT($alsa_disabled)
 fi
+
+# Steam Link
+AC_CHECK_HEADERS([SLVideo.h SLAudio.h], steamlink_found=yes,)
+if test "$steamlink_found" = "yes"; then
+  USE_STEAMLINK=1
+  use_pulse=no
+  AC_DEFINE([HAS_STEAMLINK], [], [Define if we are compiling with the Steam Link SDK])
+  LIBS="$LIBS -lSLVideo -lSLAudio"
+fi
+AC_SUBST(USE_STEAMLINK)
 
 # PulseAudio
 if test "x$use_pulse" != "xno"; then
@@ -1711,7 +1721,7 @@ fi
 
 if test "${USE_STATIC_FFMPEG}" = "1"; then
   # get the libdir for static linking
-  FFMPEG_LIBDIR=${pkg_cfg_prefix}$(PKG_CONFIG_SYSROOT_DIR="" ${PKG_CONFIG} --static --variable=libdir libavcodec)
+  FFMPEG_LIBDIR=$(${PKG_CONFIG} --static --variable=libdir libavcodec)
   GNUTLS_ALL_LIBS=$(${PKG_CONFIG} --static --libs-only-l --silence-errors gnutls)
   VORBISENC_ALL_LIBS=$(${PKG_CONFIG} --static --libs-only-l --silence-errors vorbisenc)
   DCADEC_ALL_LIBS=$(${PKG_CONFIG} --static --libs-only-l --silence-errors dcadec)
