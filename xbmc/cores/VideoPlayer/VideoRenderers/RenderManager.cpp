@@ -63,6 +63,9 @@
 #elif defined(HAS_SDL)
   #include "LinuxRenderer.h"
 #endif
+#if defined(HAS_STEAMLINK)
+  #include "SteamLinkRenderer.h"
+#endif
 
 #if defined(TARGET_ANDROID)
 #include "HwDecRender/RendererMediaCodec.h"
@@ -111,6 +114,7 @@ static std::string GetRenderFormatName(ERenderFormat format)
     case RENDER_FMT_IMXMAP:    return "IMXMAP";
     case RENDER_FMT_MMAL:      return "MMAL";
     case RENDER_FMT_AML:       return "AMLCODEC";
+    case RENDER_FMT_STEAMLINK: return "STEAMLINK";
     case RENDER_FMT_NONE:      return "NONE";
   }
   return "UNKNOWN";
@@ -579,7 +583,9 @@ void CRenderManager::CreateRenderer()
     }
     else if (m_format != RENDER_FMT_NONE)
     {
-#if defined(HAS_MMAL)
+#if defined(HAS_STEAMLINK)
+      m_pRenderer = new STEAMLINK::CSteamLinkRenderer;
+#elif defined(HAS_MMAL)
       m_pRenderer = new CMMALRenderer;
 #elif defined(HAS_GL)
       m_pRenderer = new CLinuxRendererGL;
