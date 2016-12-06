@@ -207,7 +207,7 @@ while [ $(( $LOOP )) = "1" ]
 do
   [ -f "${APPORT_CORE}" ] && rm -f "${APPORT_CORE}"
   LOOP=0
-  ${KODI_BINARY} $SAVED_ARGS
+  gdbserver :8080 ${KODI_BINARY} $SAVED_ARGS
   RET=$?
   if [ $(( $RET == 65 )) = "1" ]
   then # User requested to restart app
