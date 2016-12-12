@@ -26,24 +26,28 @@
 namespace STEAMLINK
 {
 
-class CSteamLinkRenderer : public CLinuxRendererGLES
+class CRendererSteamLink : public CLinuxRendererGLES
 {
 public:
-  CSteamLinkRenderer() { }
-  virtual ~CSteamLinkRenderer() { }
+  CRendererSteamLink() = default;
+  virtual ~CRendererSteamLink() = default;
 
   // implementation of CBaseRenderer via CLinuxRendererGLES
+  virtual void AddVideoPictureHW(DVDVideoPicture &picture, int index) override;
+  virtual bool IsPictureHW(DVDVideoPicture &picture) override { return true; }
+  virtual void PreInit() override;
+  virtual void ReleaseBuffer(int idx) override;
   virtual bool IsGuiLayer() override { return false; }
+  virtual bool CanFFRW() override { return false; }
   virtual bool SupportsMultiPassRendering() override { return false; }
   virtual bool Supports(ERENDERFEATURE feature) override { return false; }
   virtual bool Supports(ESCALINGMETHOD method) override { return false; }
 
 protected:
   // implementation of CLinuxRendererGLES
-  bool LoadShadersHook();
-  bool RenderHook(int index) { return true; }
-  bool RenderUpdateVideoHook(bool clear, DWORD flags = 0, DWORD alpha = 255) { return true; }
-  int  GetImageHook(YV12Image *image, int source = -1, bool readonly = false);
+  virtual bool LoadShadersHook() override;
+  virtual bool RenderUpdateVideoHook(bool clear, DWORD flags = 0, DWORD alpha = 255) override;
+  virtual int GetImageHook(YV12Image *image, int source = -1, bool readonly = false) override;
 };
 
 }

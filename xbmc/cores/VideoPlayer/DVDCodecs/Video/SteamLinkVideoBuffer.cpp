@@ -1,6 +1,7 @@
 /*
  *      Copyright (C) 2016 Team Kodi
  *      Copyright (C) 2016 Valve Corporation
+ *      http://kodi.tv
  *
  *  This Program is free software; you can redistribute it and/or modify
  *  it under the terms of the GNU General Public License as published by
@@ -18,22 +19,32 @@
  *
  */
 
-#include "SteamLinkRenderer.h"
-#include "utils/log.h"
+#include "SteamLinkVideoBuffer.h"
 
-#include <GLES2/gl2.h>
+#include <stdlib.h>
 
 using namespace STEAMLINK;
 
-bool CSteamLinkRenderer::LoadShadersHook()
+// --- SteamLinkBufferFree -----------------------------------------------------
+
+void SteamLinkBufferFree::operator()(void* x)
 {
-  CLog::Log(LOGNOTICE, "CSteamLinkRenderer: Using STEAMLINK render method");
-  m_textureTarget = GL_TEXTURE_2D;
-  m_renderMethod = RENDER_BYPASS;
-  return false;
+  free(x);
 }
 
-int CSteamLinkRenderer::GetImageHook(YV12Image *image, int source /* = AUTOSOURCE */, bool readonly /* = false */)
+// --- CSteamLinkBuffer --------------------------------------------------------
+
+CSteamLinkBuffer::CSteamLinkBuffer(SteamLinkUniqueBuffer buffer, size_t size, std::shared_ptr<CSteamLinkVideoStream> stream) :
+  buffer(std::move(buffer)),
+  size(size),
+  stream(std::move(stream))
 {
-  return source;
+}
+
+CSteamLinkBuffer::CSteamLinkBuffer(CSteamLinkBuffer&& other) :
+  buffer(std::move(other.buffer)),
+  size(other.size),
+  stream(std::move(other.stream))
+{
+  other.size = 0;
 }

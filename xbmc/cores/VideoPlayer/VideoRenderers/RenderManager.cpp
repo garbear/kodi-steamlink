@@ -63,13 +63,14 @@
 #elif defined(HAS_SDL)
   #include "LinuxRenderer.h"
 #endif
-#if defined(HAS_STEAMLINK)
-  #include "SteamLinkRenderer.h"
-#endif
 
 #if defined(TARGET_ANDROID)
 #include "HwDecRender/RendererMediaCodec.h"
 #include "HwDecRender/RendererMediaCodecSurface.h"
+#endif
+
+#if defined(HAS_STEAMLINK)
+  #include "HwDecRender/RendererSteamLink.h"
 #endif
 
 #if defined(TARGET_POSIX)
@@ -581,11 +582,15 @@ void CRenderManager::CreateRenderer()
       m_pRenderer = new CRendererAML;
 #endif
     }
-    else if (m_format != RENDER_FMT_NONE)
+    else if (m_format == RENDER_FMT_STEAMLINK)
     {
 #if defined(HAS_STEAMLINK)
-      m_pRenderer = new STEAMLINK::CSteamLinkRenderer;
-#elif defined(HAS_MMAL)
+      m_pRenderer = new STEAMLINK::CRendererSteamLink;
+#endif
+    }
+    else if (m_format != RENDER_FMT_NONE)
+    {
+#if defined(HAS_MMAL)
       m_pRenderer = new CMMALRenderer;
 #elif defined(HAS_GL)
       m_pRenderer = new CLinuxRendererGL;
@@ -1356,6 +1361,14 @@ void CRenderManager::DiscardBuffer()
   if(m_presentstep == PRESENT_READY)
     m_presentstep = PRESENT_IDLE;
   m_presentevent.notifyAll();
+}
+
+bool CRenderManager::CanFFRW()
+{
+  if (m_pRenderer)
+    return m_pRenderer->CanFFRW();
+
+  return true;
 }
 
 bool CRenderManager::GetStats(int &lateframes, double &pts, int &queued, int &discard)

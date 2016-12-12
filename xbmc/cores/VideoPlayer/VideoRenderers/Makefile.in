@@ -24,10 +24,6 @@ SRCS += OverlayRendererGL.cpp
 SRCS += FrameBufferObject.cpp
 endif
 
-ifeq (@USE_STEAMLINK@,1)
-SRCS += SteamLinkRenderer.cpp
-endif
-
 LIB = VideoRenderer.a
 
 include @abs_top_srcdir@/Makefile.include

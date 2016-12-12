@@ -65,6 +65,8 @@ SRCS += Sinks/AESinkPULSE.cpp
 endif
 ifeq (@USE_STEAMLINK@,1)
 SRCS += Sinks/AESinkSteamLink.cpp
+SRCS += Sinks/AESinkSteamLinkStream.cpp
+SRCS += Sinks/AESinkSteamLinkTranslator.cpp
 endif
 endif
 

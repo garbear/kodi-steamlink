@@ -19,6 +19,8 @@
  */
 
 #include "AESinkSteamLink.h"
+#include "AESinkSteamLinkStream.h"
+#include "AESinkSteamLinkTranslator.h"
 #include "cores/AudioEngine/Utils/AEUtil.h"
 #include "utils/log.h"
 #include "utils/TimeUtils.h"
@@ -29,48 +31,26 @@
 #include <cstring>
 #include <unistd.h>
 
-#define SL_SAMPLE_RATE  48000
-#define SINK_FEED_MS    50 // Steam Link game streaming uses 10ms
-#define CACHE_TOTAL_MS  200
-#define INITIAL_ATTENUATION_TIME 6.0
-#define DELAY_OFFSET_SECONDS -0.025
+#define SL_SAMPLE_RATE                 48000
+#define SINK_FEED_MS                   50 // Steam Link game streaming uses 10ms
+#define CACHE_TOTAL_MS                 200
+#define INITIAL_ATTENUATION_TIME_SECS  6.0
 
 using namespace STEAMLINK;
-
-namespace STEAMLINK
-{
-  extern uint32_t g_unQueuedVideoMS;
-}
 
 namespace
 {
   void LogFunction(void *pContext, ESLAudioLog eLogLevel, const char *pszMessage)
   {
-    switch (eLogLevel)
-    {
-    case k_ESLAudioLogDebug:
-      CLog::Log(LOGDEBUG, "%s", pszMessage);
-      break;
-    case k_ESLAudioLogInfo:
-      CLog::Log(LOGINFO, "%s", pszMessage);
-      break;
-    case k_ESLAudioLogWarning:
-      CLog::Log(LOGWARNING, "%s", pszMessage);
-      break;
-    case k_ESLAudioLogError:
-      CLog::Log(LOGERROR, "%s", pszMessage);
-      break;
-    default:
-      break;
-    }
+    int level = CAESinkSteamLinkTranslator::TranslateLogLevel(eLogLevel);
+    CLog::Log(level, "%s", pszMessage);
   }
 }
 
 CAESinkSteamLink::CAESinkSteamLink() :
-  m_lastPackageStamp(0.0),
-  m_delaySec(0.0),
   m_context(nullptr),
-  m_stream(nullptr)
+  m_startTimeSecs(0.0),
+  m_framesSinceStart(0)
 {
   SLAudio_SetLogLevel(k_ESLAudioLogDebug);
   SLAudio_SetLogFunction(LogFunction, nullptr);
@@ -84,53 +64,49 @@ CAESinkSteamLink::~CAESinkSteamLink()
 
 bool CAESinkSteamLink::Initialize(AEAudioFormat &format, std::string &device)
 {
+  bool bSuccess = false;
+
   Deinitialize();
 
-  m_initialAttenuation = true;
-  m_startTime = (double)CurrentHostCounter() / CurrentHostFrequency();
+  m_startTimeSecs = 0.0; // Set in first call to AddPackets()
+  m_framesSinceStart = 0;
   
   format.m_dataFormat    = AE_FMT_S16NE;
   format.m_sampleRate    = SL_SAMPLE_RATE;
   format.m_frames        = format.m_sampleRate * SINK_FEED_MS / 1000;
   format.m_frameSize     = format.m_channelLayout.Count() * (CAEUtil::DataFormatToBits(format.m_dataFormat) >> 3);
-  m_format = format;
+
+  if (format.m_channelLayout.Count() == 0 || format.m_frameSize == 0)
+    return false;
 
   CSLAudioContext* context = SLAudio_CreateContext();
-  if (context)
-  {
-    CSLAudioStream* stream = SLAudio_CreateStream(context, m_format.m_sampleRate, m_format.m_channelLayout.Count(), format.m_frames * format.m_frameSize, false);
-    if (stream)
-    {
-      // Success
-      m_context = context;
-      m_stream = stream;
-    }
-    else
-    {
-      CLog::Log(LOGERROR, "SteamLinkAudio: Failed to create stream");
-      SLAudio_FreeContext(context);
-    }
-  }
-  else
+  if (!context)
   {
     CLog::Log(LOGERROR, "SteamLinkAudio: Failed to create context");
   }
+  else
+  {
+    std::unique_ptr<CAESinkSteamLinkStream> stream(new CAESinkSteamLinkStream(context, format.m_sampleRate, format.m_channelLayout.Count(), format.m_frames * format.m_frameSize));
+    if (stream->Open())
+    {
+      m_format = format;
+      m_context = context;
+      m_stream = std::move(stream);
+      bSuccess = true;
+    }
+    else
+    {
+      SLAudio_FreeContext(context);
+    }
+  }
 
-  return m_context != nullptr;
+  return bSuccess;
 }
 
 void CAESinkSteamLink::Deinitialize()
 {
-  while (m_AudioQueue.size() > 0)
-  {
-    delete[] m_AudioQueue.front().m_pData;
-    m_AudioQueue.pop();
-  }
-  if (m_stream)
-  {
-    SLAudio_FreeStream(m_stream);
-    m_stream = nullptr;
-  }
+  m_stream.reset();
+
   if (m_context)
   {
     SLAudio_FreeContext(m_context);
@@ -145,101 +121,103 @@ double CAESinkSteamLink::GetCacheTotal()
 
 unsigned int CAESinkSteamLink::AddPackets(uint8_t **data, unsigned int frames, unsigned int offset)
 {
-  const double packetTimeSecs = 1.0 * (frames - offset) / m_format.m_sampleRate;
+  if (offset >= frames)
+    return 0;
 
-  // Update delay for elapsed time
-  const double nowSecs = (double)CurrentHostCounter() / CurrentHostFrequency();
-  if (m_lastPackageStamp > 0.0)
+  if (!m_stream)
+    return 0;
+
+  // Calculate frame count from given parameters
+  const unsigned int frameCount = frames - offset;
+
+  // Calculate start time and present time
+  const double nowSecs = static_cast<double>(CurrentHostCounter()) / CurrentHostFrequency();
+
+  if (m_startTimeSecs == 0.0)
+    m_startTimeSecs = nowSecs;
+
+  double presentTimeSecs = m_startTimeSecs + static_cast<double>(m_framesSinceStart) / m_format.m_sampleRate;
+
+  // Detect underrun
+  if (presentTimeSecs < nowSecs)
   {
-    const double elapsedSecs = nowSecs - m_lastPackageStamp;
-    m_delaySec -= elapsedSecs;
-    if (m_delaySec < 0.0)
-      m_delaySec = 0.0;
+    CLog::Log(LOGDEBUG, "SteamLinkAudio: Buffer underrun detected");
+    presentTimeSecs = m_startTimeSecs = nowSecs;
+    m_framesSinceStart = 0;
   }
-  m_lastPackageStamp = nowSecs;
 
   // Ensure space in the buffer
-  const double availableSecs = GetCacheTotal() - GetDelaySecs();
+  const double delaySecs = presentTimeSecs - nowSecs;
 
-  const int sleepTimeUs = (int)((SINK_FEED_MS / 1000.0 - availableSecs) * 1000 * 1000);
+  const double availableSecs = GetCacheTotal() - delaySecs;
+
+  const int sleepTimeUs = static_cast<int>((SINK_FEED_MS - availableSecs * 1000.0) * 1000);
 
   if (sleepTimeUs > 0)
     usleep(sleepTimeUs);
 
-  CAudioChunk chunk;
-  chunk.m_nSize = (frames - offset) * m_format.m_frameSize;
-  chunk.m_pData = new uint8_t[chunk.m_nSize];
-  std::memcpy(chunk.m_pData, data[0] + offset * m_format.m_frameSize, chunk.m_nSize);
-  if (m_initialAttenuation)
+  // Create buffer and copy data
+  const size_t packetSize = frameCount * m_format.m_frameSize;
+  std::unique_ptr<uint8_t[]> buffer(new uint8_t[packetSize]);
+
+  std::memcpy(buffer.get(), *data + offset * m_format.m_frameSize, packetSize);
+
+  // Attenuate if necessary
+  const double elapsedSinceStartSecs = (presentTimeSecs - m_startTimeSecs);
+  const bool bAttenuate = (elapsedSinceStartSecs < INITIAL_ATTENUATION_TIME_SECS);
+  if (bAttenuate)
   {
-    double flVolume = (nowSecs - m_startTime) / INITIAL_ATTENUATION_TIME;
-    flVolume *= flVolume;
-    if (flVolume < 1.0)
-      AttenuateChunk(&chunk, flVolume);
-    else
-      m_initialAttenuation = false;
-  }
-  chunk.m_nNowSecs = nowSecs + g_unQueuedVideoMS / 1000.0 + DELAY_OFFSET_SECONDS;
-  m_AudioQueue.push( chunk );
-
-  while (m_AudioQueue.size() > 0)
-  {
-    chunk = m_AudioQueue.front();
-    if (chunk.m_nNowSecs > nowSecs + 0.001)
-    {
-      break;
-    }
-
-    m_AudioQueue.pop();
-
-    void* buffer = SLAudio_BeginFrame(m_stream);
-    std::memcpy(buffer, chunk.m_pData, chunk.m_nSize);
-    SLAudio_SubmitFrame(m_stream);
-    delete[] chunk.m_pData;
+    double flVolume = elapsedSinceStartSecs / INITIAL_ATTENUATION_TIME_SECS;
+    AttenuateChunk(buffer.get(), packetSize, flVolume * flVolume);
   }
 
-  // Increase the delay for the added packet
-  m_delaySec += packetTimeSecs;
+  // Add packet
+  if (!m_stream->AddPacket(std::move(buffer), packetSize, presentTimeSecs))
+    return 0;
 
-  return frames - offset;
+  m_framesSinceStart += frameCount;
+
+  return frameCount;
 }
 
 void CAESinkSteamLink::GetDelay(AEDelayStatus &status)
 {
-  status.SetDelay(GetDelaySecs());
+  double delaySecs = 0.0;
+
+  if (m_startTimeSecs != 0.0)
+  {
+    const double nowSecs = static_cast<double>(CurrentHostCounter()) / CurrentHostFrequency();
+
+    double nextPresentTimeSecs = m_startTimeSecs + static_cast<double>(m_framesSinceStart) / m_format.m_sampleRate;
+
+    if (nextPresentTimeSecs > nowSecs)
+      delaySecs = nextPresentTimeSecs - nowSecs;
+  }
+
+  status.SetDelay(delaySecs);
 }
 
-void CAESinkSteamLink::AttenuateChunk(CAudioChunk *pChunk, double flVolume)
+void CAESinkSteamLink::Drain()
 {
-  int16_t *pData = (int16_t*)pChunk->m_pData;
-  int nCount = pChunk->m_nSize / sizeof(*pData);
+  if (m_stream)
+  {
+    if (!m_stream->Flush())
+      m_stream.reset();
+  }
+
+  m_startTimeSecs = 0.0;
+  m_framesSinceStart = 0;
+}
+
+void CAESinkSteamLink::AttenuateChunk(uint8_t *pChunk, unsigned int size, double flVolume)
+{
+  int16_t *pData = reinterpret_cast<int16_t*>(pChunk);
+  int nCount = size / sizeof(*pData);
   while (nCount--)
   {
     *pData = static_cast<int16_t>(*pData * flVolume);
     ++pData;
   }
-}
-
-void CAESinkSteamLink::Drain()
-{
-  unsigned int usecs = (unsigned int)(GetDelaySecs() * 1000 * 1000);
-  if (usecs > 0)
-    usleep(usecs);
-
-  m_lastPackageStamp = 0.0;
-  m_delaySec = 0.0;
-
-  while (m_AudioQueue.size() > 0)
-  {
-    delete[] m_AudioQueue.front().m_pData;
-    m_AudioQueue.pop();
-  }
-  g_unQueuedVideoMS = 0;
-}
-
-double CAESinkSteamLink::GetDelaySecs()
-{
-  return m_delaySec;
 }
 
 void CAESinkSteamLink::EnumerateDevicesEx(AEDeviceInfoList &deviceInfoList, bool force /* = false */)

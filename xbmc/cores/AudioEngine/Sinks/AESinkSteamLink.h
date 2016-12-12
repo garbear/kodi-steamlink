@@ -20,18 +20,19 @@
 #pragma once
 
 #include "cores/AudioEngine/Interfaces/AESink.h"
+#include "cores/AudioEngine/Utils/AEAudioFormat.h"
 #include "cores/AudioEngine/Utils/AEDeviceInfo.h"
 
+#include <memory>
 #include <stdint.h>
-#include <queue>
 
 #define STEAM_LINK_SINK_NAME  "SteamLinkAudio"
 
 struct CSLAudioContext;
-struct CSLAudioStream;
 
 namespace STEAMLINK
 {
+class CAESinkSteamLinkStream;
 
 class CAESinkSteamLink : public IAESink
 {
@@ -52,30 +53,16 @@ public:
   static void EnumerateDevicesEx(AEDeviceInfoList &deviceInfoList, bool force = false);
 
 private:
-  double GetDelaySecs();
-
-  // AE stuff
-  AEAudioFormat m_format;
-  double        m_lastPackageStamp;
-  double        m_delaySec; // Estimated delay in seconds
+  void AttenuateChunk(uint8_t *pChunk, unsigned int size, double flVolume);
 
   // Steam Link stuff
   CSLAudioContext *m_context;
-  CSLAudioStream *m_stream;
+  std::unique_ptr<CAESinkSteamLinkStream> m_stream;
 
-  // Queued audio for video sync
-  struct CAudioChunk
-  {
-    uint8_t *m_pData;
-    unsigned int m_nSize;
-    double m_nNowSecs;
-  };
-  std::queue<CAudioChunk> m_AudioQueue;
-
-  // Initial attenuation to cover audio sync
-  double m_startTime;
-  bool m_initialAttenuation;
-  void AttenuateChunk(CAudioChunk *pChunk, double flVolume);
+  // AE stuff
+  AEAudioFormat m_format;
+  double m_startTimeSecs;
+  uint64_t m_framesSinceStart;
 };
 
 }

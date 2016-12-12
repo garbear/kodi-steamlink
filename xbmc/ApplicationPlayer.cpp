@@ -405,6 +405,12 @@ bool CApplicationPlayer::CanPause()
   return (player && player->CanPause());
 }
 
+bool CApplicationPlayer::CanFFRW()
+{
+  std::shared_ptr<IPlayer> player = GetInternal();
+  return (player && player->CanFFRW());
+}
+
 bool CApplicationPlayer::IsRecording() const
 {
   std::shared_ptr<IPlayer> player = GetInternal();

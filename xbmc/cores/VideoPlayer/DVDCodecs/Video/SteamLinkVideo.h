@@ -21,7 +21,10 @@
 #pragma once
 
 #include "DVDVideoCodec.h"
+#include "SteamLinkVideoBuffer.h"
+#include "threads/CriticalSection.h"
 
+#include <memory>
 #include <stdint.h>
 #include <string>
 
@@ -32,6 +35,8 @@ struct CSLVideoStream;
 
 namespace STEAMLINK
 {
+
+class CSteamLinkVideoStream;
 
 class CSteamLinkVideo : public CDVDVideoCodec
 {
@@ -44,15 +49,29 @@ public:
   virtual int Decode(uint8_t* pData, int iSize, double dts, double pts) override;
   virtual void Reset() override;
   virtual bool GetPicture(DVDVideoPicture* pDvdVideoPicture) override;
+  virtual bool ClearPicture(DVDVideoPicture* pDvdVideoPicture) override;
   virtual void SetDropState(bool bDrop) override { }
   virtual const char* GetName() override { return STEAMLINK_VIDEO_CODEC_NAME; }
+
+  // Access global stream instance
+  static bool IsPlayingVideo();
+  static unsigned int GetDelayMs();
 
 private:
   void Dispose();
 
+  std::shared_ptr<CSteamLinkVideoStream> GetStream();
+
   // Steam Link data
   CSLVideoContext* m_context;
-  CSLVideoStream* m_stream;
+  std::shared_ptr<CSteamLinkVideoStream> m_stream;
+  CCriticalSection m_streamLock;
+
+  // VideoPlayer data
+  DVDVideoPicture m_videoPictureBuffer;
+  SteamLinkUniqueBuffer m_buffer;
+  size_t m_bufferSize;
+  float m_dts;
 
   // bitstream to bytestream (Annex B) conversion support.
   bool bitstream_convert_init(void *in_extradata, int in_extrasize);
@@ -80,6 +99,11 @@ private:
   uint32_t      m_sps_pps_size;
   bitstream_ctx m_sps_pps_context;
   bool          m_convert_bitstream;
+
+  // Global instance
+  static CSteamLinkVideo* m_globalVideo;
+  static unsigned int m_globalInstances;
+  static CCriticalSection m_globalLock;
 };
 
 }

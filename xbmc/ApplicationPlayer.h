@@ -106,6 +106,7 @@ public:
   bool  CanPause();
   bool  CanRecord();
   bool  CanSeek();
+  bool  CanFFRW();
   void  DoAudioWork();
   void  GetAudioCapabilities(std::vector<int> &audioCaps);
   int   GetAudioStream();
