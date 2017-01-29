@@ -389,7 +389,7 @@ void CBaseRenderer::ManageRenderArea()
     else if(stereo_view == RENDER_STEREO_VIEW_RIGHT) stereo_view = RENDER_STEREO_VIEW_LEFT;
   }
 
-  if (m_format != RENDER_FMT_BYPASS)
+  if (IsGuiLayer())
   {
     switch(stereo_mode)
     {

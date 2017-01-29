@@ -8,7 +8,7 @@ SOURCE=$(LIBNAME)-$(VERSION)
 ARCHIVE=$(SOURCE).tar.gz
 
 # configuration settings
-CONFIGURE=./configure --prefix=$(PREFIX) --disable-video-directfb
+CONFIGURE=./configure --prefix=$(PREFIX) --disable-video-directfb --without-x --disable-video-x11
 ifneq ($(OS),linux)
 CONFIGURE += --without-x --disable-video-x11
 endif
