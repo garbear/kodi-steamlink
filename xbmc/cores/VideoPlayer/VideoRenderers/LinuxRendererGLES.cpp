@@ -710,7 +710,7 @@ inline void CLinuxRendererGLES::ReorderDrawPoints()
 
 bool CLinuxRendererGLES::CreateTexture(int index)
 {
-  if (m_format == RENDER_FMT_BYPASS)
+  if (!IsGuiLayer())
   {
     CreateBYPASSTexture(index);
     return true;
@@ -732,7 +732,7 @@ bool CLinuxRendererGLES::CreateTexture(int index)
 
 void CLinuxRendererGLES::DeleteTexture(int index)
 {
-  if (m_format == RENDER_FMT_BYPASS)
+  if (!IsGuiLayer())
   {
     DeleteBYPASSTexture(index);
   }
@@ -750,7 +750,7 @@ void CLinuxRendererGLES::DeleteTexture(int index)
 bool CLinuxRendererGLES::UploadTexture(int index)
 {
   // Now that we now the render method, setup texture function handlers
-  if (m_format == RENDER_FMT_BYPASS)
+  if (!IsGuiLayer())
   {
     UploadBYPASSTexture(index);
     return true;
