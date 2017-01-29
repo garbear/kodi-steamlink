@@ -71,6 +71,7 @@ public:
   std::string GetPlayerInfo() override;
   int GetVideoBitrate() override;
   void SetSpeed(int iSpeed) override;
+  bool CanFFRW() override;
 
   // classes
   CDVDOverlayContainer* m_pOverlayContainer;

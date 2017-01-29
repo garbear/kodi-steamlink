@@ -124,6 +124,7 @@ struct SPlayerState
   bool canpause;            // pvr: can pause the current playing item
   bool canseek;             // pvr: can seek in the current playing item
   bool cantempo;
+  bool canffrw;
   bool caching;
 
   int64_t cache_bytes;   // number of bytes current's cached
@@ -292,6 +293,7 @@ public:
   bool HasRDS() const override;
   bool IsPassthrough() const override;
   bool CanSeek() override;
+  bool CanFFRW() override;
   void Seek(bool bPlus, bool bLargeStep, bool bChapterOverride) override;
   bool SeekScene(bool bPlus = true) override;
   void SeekPercentage(float iPercent) override;
