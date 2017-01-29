@@ -3098,6 +3098,12 @@ bool CVideoPlayer::CanSeek()
   return m_State.canseek;
 }
 
+bool CVideoPlayer::CanFFRW()
+{
+  CSingleLock lock(m_StateSection);
+  return m_State.canffrw;
+}
+
 void CVideoPlayer::Seek(bool bPlus, bool bLargeStep, bool bChapterOverride)
 {
   if (!m_State.canseek)
@@ -4932,6 +4938,9 @@ void CVideoPlayer::UpdatePlayState(double timeout)
     state.canpause = m_pInputStream->CanPause();
     state.canseek = m_pInputStream->CanSeek();
   }
+
+  state.canffrw = m_VideoPlayerVideo->CanFFRW();
+
 
   if (m_Edl.HasCut())
   {

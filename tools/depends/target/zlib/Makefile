@@ -7,7 +7,7 @@ VERSION=1.2.7
 SOURCE=$(LIBNAME)-$(VERSION)
 ARCHIVE=$(SOURCE).tar.gz
 # configuration settings
-CONFIGURE= CC="$(CC)" CFLAGS="$(CFLAGS)" ./configure --prefix=$(PREFIX) --static
+CONFIGURE= CC="$(CC)" CFLAGS="$(CFLAGS) -fPIC" ./configure --prefix=$(PREFIX) --static
 
 LIBDYLIB=$(PLATFORM)/$(LIBNAME).a
 
