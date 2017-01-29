@@ -1834,7 +1834,7 @@ bool CApplication::OnAction(const CAction &action)
         m_appPlayer.SetPlaySpeed(1);
       return true;
     }
-    if (!m_appPlayer.IsPaused())
+    if (!m_appPlayer.IsPaused() && m_appPlayer.CanFFRW())
     {
       if (action.GetID() == ACTION_PLAYER_FORWARD || action.GetID() == ACTION_PLAYER_REWIND)
       {

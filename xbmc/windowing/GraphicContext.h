@@ -93,7 +93,7 @@ public:
   bool IsCalibrating() const;
   void SetCalibrating(bool bOnOff);
   void ResetOverscan(RESOLUTION res, OVERSCAN &overscan);
-  void ResetOverscan(RESOLUTION_INFO &resinfo);
+  static void ResetOverscan(RESOLUTION_INFO &resinfo);
   void ResetScreenParameters(RESOLUTION res);
   void CaptureStateBlock();
   void ApplyStateBlock();
