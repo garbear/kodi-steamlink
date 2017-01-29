@@ -91,6 +91,7 @@ public:
   int GetVideoBitrate();
   std::string GetStereoMode();
   void SetSpeed(int iSpeed);
+  virtual bool CanFFRW() override;
 
   // classes
   CDVDOverlayContainer* m_pOverlayContainer;

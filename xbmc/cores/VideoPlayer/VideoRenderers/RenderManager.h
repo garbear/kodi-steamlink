@@ -156,6 +156,8 @@ public:
   void SetDelay(int delay) { m_videoDelay = delay; };
   int GetDelay() { return m_videoDelay; };
 
+  bool CanFFRW();
+
 protected:
 
   void PresentSingle(bool clear, DWORD flags, DWORD alpha);
