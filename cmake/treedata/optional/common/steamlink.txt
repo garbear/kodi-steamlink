@@ -1,0 +1,5 @@
+xbmc/cores/AudioEngine/Sinks/steamlink cores/AudioEngine/Sinks/steamlink # STEAMLINK
+xbmc/cores/RetroPlayer/process/steamlink cores/RetroPlayer/process/steamlink # STEAMLINK
+xbmc/cores/VideoPlayer/DVDCodecs/Video/steamlink cores/VideoPlayer/DVDCodecs/Video/steamlink # STEAMLINK
+xbmc/cores/VideoPlayer/VideoRenderers/HwDecRender/steamlink cores/VideoPlayer/VideoRenderers/HwDecRender/steamlink # STEAMLINK
+xbmc/windowing/steamlink windowing/steamlink # STEAMLINK

@@ -1195,6 +1195,14 @@ void CRenderManager::DiscardBuffer()
   m_presentevent.notifyAll();
 }
 
+bool CRenderManager::CanFFRW()
+{
+  if (m_pRenderer)
+    return m_pRenderer->CanFFRW();
+
+  return true;
+}
+
 bool CRenderManager::GetStats(int &lateframes, double &pts, int &queued, int &discard)
 {
   CSingleLock lock(m_presentlock);

@@ -71,6 +71,7 @@ public:
   // proxy calls
   void AddSubtitle(const std::string& strSubPath);
   bool CanPause();
+  bool CanFFRW();
   bool CanSeek();
   void DoAudioWork();
   void GetAudioCapabilities(std::vector<int> &audioCaps);
