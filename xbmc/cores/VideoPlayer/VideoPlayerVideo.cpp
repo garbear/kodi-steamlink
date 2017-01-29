@@ -654,6 +654,11 @@ void CVideoPlayerVideo::SetSpeed(int speed)
     m_speed = speed;
 }
 
+bool CVideoPlayerVideo::CanFFRW()
+{
+  return m_renderManager.CanFFRW();
+}
+
 void CVideoPlayerVideo::Flush(bool sync)
 {
   /* flush using message as this get's called from VideoPlayer thread */

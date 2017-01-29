@@ -246,6 +246,7 @@ public:
   virtual bool HasRDS() const { return false; }
   virtual bool IsPassthrough() const { return false;}
   virtual bool CanSeek() {return true;}
+  virtual bool CanFFRW() { return true; }
   virtual void Seek(bool bPlus = true, bool bLargeStep = false, bool bChapterOverride = false) = 0;
   virtual bool SeekScene(bool bPlus = true) {return false;}
   virtual void SeekPercentage(float fPercent = 0){}
