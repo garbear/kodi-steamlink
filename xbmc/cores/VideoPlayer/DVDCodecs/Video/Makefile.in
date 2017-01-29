@@ -34,6 +34,13 @@ ifeq (@USE_MMAL@,1)
 SRCS += MMALCodec.cpp MMALFFmpeg.cpp
 endif
 
+ifeq (@USE_STEAMLINK@,1)
+SRCS += SteamLinkTranslator.cpp
+SRCS += SteamLinkVideo.cpp
+SRCS += SteamLinkVideoBuffer.cpp
+SRCS += SteamLinkVideoStream.cpp
+endif
+
 LIB=Video.a
 
 include @abs_top_srcdir@/Makefile.include

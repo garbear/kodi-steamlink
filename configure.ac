@@ -1197,6 +1197,13 @@ if test "x$use_dbus" != "xno"; then
 else
   AC_MSG_NOTICE($dbus_disabled)
 fi
+  #case "$host_vendor" != "apple"; determine availability of SDL or SDL2
+  PKG_CHECK_MODULES([SDL2], [sdl2],
+    [AC_DEFINE([HAVE_SDL_VERSION],[2],["SDL major version"])
+     AC_DEFINE([HAVE_SDL],[1],["Define to 1 if using sdl"])
+     INCLUDES="$INCLUDES $SDL2_CFLAGS"; LIBS="$LIBS $SDL2_LIBS"],
+     AC_MSG_RESULT("SDL enabled")
+  )
 fi
 
 XB_FIND_SONAME([ASS],         [ass])
@@ -1224,6 +1231,16 @@ else
   use_alsa="no"
   AC_MSG_RESULT($alsa_disabled)
 fi
+
+# Steam Link
+AC_CHECK_HEADERS([SLVideo.h SLAudio.h], steamlink_found=yes,)
+if test "$steamlink_found" = "yes"; then
+  USE_STEAMLINK=1
+  use_pulse=no
+  AC_DEFINE([HAS_STEAMLINK], [], [Define if we are compiling with the Steam Link SDK])
+  LIBS="$LIBS -lSLVideo -lSLAudio"
+fi
+AC_SUBST(USE_STEAMLINK)
 
 # PulseAudio
 if test "x$use_pulse" != "xno"; then
@@ -1615,7 +1632,7 @@ fi
 
 if test "${USE_STATIC_FFMPEG}" = "1"; then
   # get the libdir for static linking
-  FFMPEG_LIBDIR=${pkg_cfg_prefix}$(PKG_CONFIG_SYSROOT_DIR="" ${PKG_CONFIG} --static --variable=libdir libavcodec)
+  FFMPEG_LIBDIR=$(${PKG_CONFIG} --static --variable=libdir libavcodec)
   GNUTLS_ALL_LIBS=$(${PKG_CONFIG} --static --libs-only-l --silence-errors gnutls)
 
   # check if static libs are available
