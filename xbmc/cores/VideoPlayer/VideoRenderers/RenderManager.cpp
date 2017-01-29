@@ -69,6 +69,10 @@
 #include "HwDecRender/RendererMediaCodecSurface.h"
 #endif
 
+#if defined(HAS_STEAMLINK)
+  #include "HwDecRender/RendererSteamLink.h"
+#endif
+
 #if defined(TARGET_POSIX)
 #include "linux/XTimeUtils.h"
 #endif
@@ -111,6 +115,7 @@ static std::string GetRenderFormatName(ERenderFormat format)
     case RENDER_FMT_IMXMAP:    return "IMXMAP";
     case RENDER_FMT_MMAL:      return "MMAL";
     case RENDER_FMT_AML:       return "AMLCODEC";
+    case RENDER_FMT_STEAMLINK: return "STEAMLINK";
     case RENDER_FMT_NONE:      return "NONE";
   }
   return "UNKNOWN";
@@ -580,6 +585,12 @@ void CRenderManager::CreateRenderer()
     {
 #if defined(HAS_LIBAMCODEC)
       m_pRenderer = new CRendererAML;
+#endif
+    }
+    else if (m_format == RENDER_FMT_STEAMLINK)
+    {
+#if defined(HAS_STEAMLINK)
+      m_pRenderer = new STEAMLINK::CRendererSteamLink;
 #endif
     }
     else if (m_format != RENDER_FMT_NONE)
@@ -1356,6 +1367,14 @@ void CRenderManager::DiscardBuffer()
   if(m_presentstep == PRESENT_READY)
     m_presentstep = PRESENT_IDLE;
   m_presentevent.notifyAll();
+}
+
+bool CRenderManager::CanFFRW()
+{
+  if (m_pRenderer)
+    return m_pRenderer->CanFFRW();
+
+  return true;
 }
 
 bool CRenderManager::GetStats(int &lateframes, double &pts, int &queued, int &discard)

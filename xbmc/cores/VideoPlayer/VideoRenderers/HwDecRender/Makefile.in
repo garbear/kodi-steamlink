@@ -26,6 +26,10 @@ ifeq ($(findstring osx,@ARCH@),osx)
 SRCS += RendererVTBGL.cpp
 endif
 
+ifeq (@USE_STEAMLINK@,1)
+SRCS += RendererSteamLink.cpp
+endif
+
 LIB=HwDecRender.a
 
 include ../../../../../Makefile.include
