@@ -51,6 +51,7 @@ class CDVDMediaCodecInfo;
 class CDVDVideoCodecIMXBuffer;
 class CMMALBuffer;
 class CDVDAmlogicInfo;
+namespace STEAMLINK { class CSteamLinkBuffer; }
 
 
 // should be entirely filled by all codecs
@@ -98,6 +99,10 @@ struct DVDVideoPicture
 
     struct {
       CDVDAmlogicInfo *amlcodec;
+    };
+
+    struct {
+      STEAMLINK::CSteamLinkBuffer *steamlink;
     };
 
   };

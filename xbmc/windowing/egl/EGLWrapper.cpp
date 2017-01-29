@@ -37,6 +37,9 @@
 #if defined(TARGET_LINUX) && defined(HAS_LIBAMCODEC)
 #include "EGLNativeTypeAmlogic.h"
 #endif
+#if HAVE_SDL_VERSION == 2
+#include "EGLNativeTypeSDL.h"
+#endif
 #include "EGLWrapper.h"
 
 #define CheckError() m_result = eglGetError(); if(m_result != EGL_SUCCESS) CLog::Log(LOGERROR, "EGL error in %s: %x",__FUNCTION__, m_result);
@@ -101,6 +104,8 @@ bool CEGLWrapper::Initialize(const std::string &implementation)
       (nativeGuess = CreateEGLNativeType<CEGLNativeTypeIMX>(implementation))
 #elif defined(TARGET_LINUX) && defined(HAS_LIBAMCODEC)
       (nativeGuess = CreateEGLNativeType<CEGLNativeTypeAmlogic>(implementation))
+#elif HAVE_SDL_VERSION == 2
+      (nativeGuess = CreateEGLNativeType<CEGLNativeTypeSDL>(implementation))
 #endif
       )
   {

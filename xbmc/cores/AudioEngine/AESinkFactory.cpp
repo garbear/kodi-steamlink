@@ -42,6 +42,9 @@
   #if defined(HAS_PULSEAUDIO)
     #include "Sinks/AESinkPULSE.h"
   #endif
+  #if defined(HAS_STEAMLINK)
+    #include "Sinks/AESinkSteamLink.h"
+  #endif
 #else
   #pragma message("NOTICE: No audio sink for target platform.  Audio output will not be available.")
 #endif
@@ -82,6 +85,9 @@ void CAESinkFactory::ParseDevice(std::string &device, std::string &driver)
   #endif
   #if defined(HAS_PULSEAUDIO)
         driver == "PULSE"       ||
+  #endif
+  #if defined(HAS_STEAMLINK)
+        driver == "STEAMLINK"   ||
   #endif
 #endif
         driver == "PROFILER"    ||
@@ -132,6 +138,10 @@ IAESink *CAESinkFactory::TrySink(std::string &driver, std::string &device, AEAud
  #if defined(TARGET_FREEBSD)
     if (driver == "OSS")
       sink = new CAESinkOSS();
+ #endif
+ #if defined(HAS_STEAMLINK)
+   if (driver == "STEAMLINK")
+     sink = new STEAMLINK::CAESinkSteamLink();
  #endif
 #endif
   }
@@ -250,6 +260,10 @@ void CAESinkFactory::EnumerateEx(AESinkInfoList &list, bool force)
     if (envSink == "OSS")
       CAESinkOSS::EnumerateDevicesEx(info.m_deviceInfoList, force);
     #endif
+    #if defined(HAS_STEAMLINK)
+    if (envSink == "STEAMLINK")
+      STEAMLINK::CAESinkSteamLink::EnumerateDevicesEx(info.m_deviceInfoList, force);
+    #endif
 
     if(!info.m_deviceInfoList.empty())
     {
@@ -288,6 +302,17 @@ void CAESinkFactory::EnumerateEx(AESinkInfoList &list, bool force)
   CAESinkOSS::EnumerateDevicesEx(info.m_deviceInfoList, force);
   if(!info.m_deviceInfoList.empty())
     list.push_back(info);
+  #endif
+
+  #if defined(HAS_STEAMLINK)
+  info.m_deviceInfoList.clear();
+  info.m_sinkName = "STEAMLINK";
+  STEAMLINK::CAESinkSteamLink::EnumerateDevicesEx(info.m_deviceInfoList, force);
+  if(!info.m_deviceInfoList.empty())
+  {
+    list.push_back(info);
+    return;
+  }
   #endif
 
 #endif
