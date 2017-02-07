@@ -40,6 +40,7 @@
 #if HAVE_SDL_VERSION == 2
 #include "EGLNativeTypeSDL.h"
 #endif
+#include "EGLNativeType.h"
 #include "EGLWrapper.h"
 
 #define CheckError() m_result = eglGetError(); if(m_result != EGL_SUCCESS) CLog::Log(LOGERROR, "EGL error in %s: %x",__FUNCTION__, m_result);
