@@ -1,0 +1,1 @@
+peripheral.joystick https://github.com/kodi-game/peripheral.joystick fix-sdl
