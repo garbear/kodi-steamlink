@@ -77,7 +77,6 @@ CPeripherals::CPeripherals() :
   m_bIsStarted(false),
   m_eventScanner(this)
 {
-  Clear();
 }
 
 CPeripherals::~CPeripherals()
@@ -135,6 +134,13 @@ void CPeripherals::Initialise()
 
 void CPeripherals::Clear()
 {
+  {
+    CSingleLock lock(m_critSection);
+    if (!m_bInitialised)
+      return;
+    m_bInitialised = false;
+  }
+
   ANNOUNCEMENT::CAnnouncementManager::GetInstance().RemoveAnnouncer(this);
 
   m_eventScanner.Stop();
@@ -165,7 +171,6 @@ void CPeripherals::Clear()
   CSingleLock lock(m_critSection);
   /* reset class state */
   m_bIsStarted   = false;
-  m_bInitialised = false;
 #if !defined(HAVE_LIBCEC)
   m_bMissingLibCecWarningDisplayed = false;
 #endif
