@@ -34,32 +34,65 @@
 using namespace PERIPHERALS;
 
 CPeripheralBusAddon::CPeripheralBusAddon(CPeripherals *manager) :
-    CPeripheralBus("PeripBusAddon", manager, PERIPHERAL_BUS_ADDON)
+    CPeripheralBus("PeripBusAddon", manager, PERIPHERAL_BUS_ADDON),
+    m_bInitialized(false)
 {
-  using namespace ADDON;
-
-  CAddonMgr::GetInstance().RegisterAddonMgrCallback(ADDON_PERIPHERALDLL, this);
-  CAddonMgr::GetInstance().Events().Subscribe(this, &CPeripheralBusAddon::OnEvent);
-
-  UpdateAddons();
 }
 
 CPeripheralBusAddon::~CPeripheralBusAddon()
 {
+  Clear();
+}
+
+void CPeripheralBusAddon::Initialise()
+{
   using namespace ADDON;
+
+  {
+    CSingleLock lock(m_initSection);
+    if (m_bInitialized)
+      return;
+
+    CPeripheralBus::Initialise();
+
+    CAddonMgr::GetInstance().RegisterAddonMgrCallback(ADDON_PERIPHERALDLL, this);
+    CAddonMgr::GetInstance().Events().Subscribe(this, &CPeripheralBusAddon::OnEvent);
+
+    m_bInitialized = true;
+  }
+
+  UpdateAddons();
+}
+
+void CPeripheralBusAddon::Clear()
+{
+  using namespace ADDON;
+
+  CSingleLock lock(m_initSection);
+  if (!m_bInitialized)
+    return;
 
   CAddonMgr::GetInstance().Events().Unsubscribe(this);
   CAddonMgr::GetInstance().UnregisterAddonMgrCallback(ADDON_PERIPHERALDLL);
 
-  // stop everything before destroying any (loaded) addons
-  Clear();
+  PeripheralAddonVector addons;
+  {
+    CSingleLock lock(m_critSection);
+    addons = m_addons;
+  }
 
   // destroy any (loaded) addons
-  for (const auto& addon : m_addons)
+  for (const auto& addon : addons)
     addon->DestroyAddon();
+  addons.clear();
 
-  m_failedAddons.clear();
-  m_addons.clear();
+  {
+    CSingleLock lock(m_critSection);
+    m_failedAddons.clear();
+    m_addons.clear();
+  }
+
+  m_bInitialized = false;
 }
 
 bool CPeripheralBusAddon::GetAddon(const std::string &strId, ADDON::AddonPtr &addon) const

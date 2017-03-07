@@ -75,6 +75,8 @@ namespace PERIPHERALS
     virtual void         Register(const PeripheralPtr& peripheral) override;
     virtual void         GetFeatures(std::vector<PeripheralFeature> &features) const override;
     virtual bool         HasFeature(const PeripheralFeature feature) const override;
+    virtual void         Initialise() override;
+    virtual void         Clear() override;
     virtual PeripheralPtr GetPeripheral(const std::string &strLocation) const override;
     virtual PeripheralPtr GetByPath(const std::string &strPath) const override;
     virtual bool         SupportsFeature(PeripheralFeature feature) const override;
@@ -101,6 +103,9 @@ namespace PERIPHERALS
     void OnEvent(const ADDON::AddonEvent& event);
 
     bool PromptEnableAddons(const ADDON::VECADDONS& disabledAddons);
+
+    bool m_bInitialized;
+    CCriticalSection m_initSection;
 
     PeripheralAddonVector m_addons;
     PeripheralAddonVector m_failedAddons;
