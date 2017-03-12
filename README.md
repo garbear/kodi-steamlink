@@ -2,8 +2,13 @@
 
 This repo contains the Steam Link port of Kodi.
 
+Kodi requires beta build 600. To upgrade/downgrade, create a text file on a USB drive at `steamlink/config/system/update_branch.txt` and boot the Steam Link with the USB drive inserted. The contents should be `600`. To revert back to the latest beta build, change the contents of `update_branch.txt` to `beta`.
+
+In the future, this will be fixed and Kodi will work on any build >= 600.
+
 ## Installation
 
+0. Switch to beta build 600.
 1. Download the latest release from https://github.com/garbear/kodi-steamlink/releases.
 2. Copy archive to the folder `steamlink/apps/` on a USB drive (FAT32 or EXT4).
 3. Insert the drive into the Steam Link and power-cycle. It will take approximately 2 minutes to install the 80MB archive.
