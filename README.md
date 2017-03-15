@@ -24,6 +24,18 @@ Kodi may crash when launched from the Steam Link homescreen due to a PulseAudio 
 3. SSH into the Steam Link as root using an SSH client, e.g. `ssh root@10.0.0.103`
 4. The password is `steamlink`
 
+#### Changing Steam Link builds
+
+If you need to test Kodi on a build different from the latest public beta, follow these steps:
+
+1. Place the build number (e.g. `600`) in a text file on a USB drive at `steamlink/config/system/update_branch.txt`
+2. Insert the drive and power on the Steam Link
+
+To revert back to the latest public beta build:
+
+1. Place the word `beta` in a text file on a USB drive at `steamlink/config/system/update_branch.txt`
+2. Insert the drive and power on the Steam Link
+
 #### Kill the Steam Link launcher and launch Kodi
 
 If you are on the **public build (566)**, enter the commands:
