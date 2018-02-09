@@ -9,9 +9,7 @@ ARCHIVE=$(SOURCE).tar.gz
 
 # configuration settings
 CONFIGURE=./configure --prefix=$(PREFIX) --disable-video-directfb
-ifneq ($(OS),linux)
 CONFIGURE += --without-x --disable-video-x11
-endif
 
 LIBDYLIB=$(PLATFORM)/build/.libs/lib$(LIBNAME).a
 
