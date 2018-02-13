@@ -105,6 +105,11 @@ if(ENABLE_GBM)
   set(ENABLE_VDPAU OFF CACHE BOOL "Disabling VDPAU" FORCE)
 endif()
 
+# TODO: Is this needed?
+if(ENABLE_STEAMLINK)
+  set(ENABLE_VDPAU OFF CACHE BOOL "Disabling VDPAU on the Steam Link" FORCE)
+endif()
+
 if(ENABLE_VDPAU)
   set(ENABLE_GLX ON CACHE BOOL "Enabling GLX" FORCE)
 endif()

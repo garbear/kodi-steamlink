@@ -1,0 +1,2 @@
+set(PLATFORM_REQUIRED_DEPS OpenGLES EGL Sdl2 SteamLink)
+set(APP_RENDER_SYSTEM gles)

@@ -406,7 +406,7 @@ case $host in
 esac
 
 case $use_platform in
-  aml|gbm|mir|wayland)
+  aml|gbm|mir|wayland|steamlink)
     if test "$platform_os" != "linux"; then
       AC_MSG_ERROR([$use_platform is only supported on the Linux platform])
     fi
@@ -414,6 +414,16 @@ case $use_platform in
       if test "$host_cpu" != "arm" && test "$host_cpu" != "aarch64"; then
         AC_MSG_ERROR([$use_platform is only supported for arm and aarch64 architecture])
       fi
+    fi
+    if test "$use_platform" = "steamlink"; then
+      platform_cflags="--sysroot=$use_toolchain/../rootfs -marm -mfpu=neon -mfloat-abi=hard"
+      platform_cxxflags="--sysroot=$use_toolchain/../rootfs -marm -mfpu=neon -mfloat-abi=hard"
+      platform_ldflags="-static-libgcc -static-libstdc++"
+
+      # TODO: Needed for Kodi, not depends
+      platform_cflags+=" -DEGL_API_FB"
+      platform_cxxflags+=" -DEGL_API_FB"
+      platform_ldflags+=" -lstdc++"
     fi
     target_platform=$use_platform
     ;;
