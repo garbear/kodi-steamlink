@@ -27,7 +27,8 @@ if(OPENGLES_FOUND AND (CORE_PLATFORM_NAME_LC STREQUAL android OR
                        CORE_PLATFORM_NAME_LC STREQUAL aml OR
                        CORE_PLATFORM_NAME_LC STREQUAL gbm OR
                        CORE_PLATFORM_NAME_LC STREQUAL mir OR
-                       CORE_PLATFORM_NAME_LC STREQUAL wayland))
+                       CORE_PLATFORM_NAME_LC STREQUAL wayland OR
+                       CORE_PLATFORM_NAME_LC STREQUAL steamlink))
   list(APPEND SOURCES VideoFilterShaderGLES.cpp
                       YUVMatrix.cpp
                       YUV2RGBShaderGLES.cpp)

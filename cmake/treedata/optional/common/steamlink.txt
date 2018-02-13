@@ -1,0 +1,2 @@
+xbmc/cores/RetroPlayer/process/steamlink cores/RetroPlayer/process/steamlink # STEAMLINK
+xbmc/windowing/steamlink windowing/steamlink # STEAMLINK
