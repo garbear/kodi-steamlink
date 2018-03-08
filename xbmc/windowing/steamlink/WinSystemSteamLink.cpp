@@ -19,7 +19,7 @@
  */
 
 #include "WinSystemSteamLink.h"
-#include "cores/AudioEngine/Sinks/AESinkALSA.h"
+#include "cores/AudioEngine/Sinks/steamlink/AESinkSteamLink.h"
 #include "guilib/GraphicContext.h"
 #include "powermanagement/linux/LinuxPowerSyscall.h"
 #include "settings/DisplaySettings.h"
@@ -38,7 +38,7 @@ CWinSystemSteamLink::CWinSystemSteamLink()
   m_winEvents.reset(new CWinEventsLinux);
 
   // Initialize AudioEngine
-  CAESinkALSA::Register();
+  CAESinkSteamLink::Register();
 
   // Initialize power management
   CLinuxPowerSyscall::Register();
