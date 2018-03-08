@@ -238,7 +238,7 @@ case $host in
     fi
     use_toolchain="${use_toolchain:-/usr}"
     platform_cflags="-fPIC -DPIC"
-    optimize_flags="-Os"
+    optimize_flags="-O0"
     platform_ldflags="-Wl,-rpath-link=$prefix/$deps_dir/lib"
     platform_cxxflags="$platform_cflags"
     platform_os="linux"
@@ -636,10 +636,10 @@ release_cflags="-DNDEBUG=1"
 if test "$platform_os" = "osx" || test "$platform_os" = "ios"; then
   debug_cflags="-g -D_DEBUG"
 else
-  CFLAGS="$tmp_cflags -Og -g -D_DEBUG"
+  CFLAGS="$tmp_cflags -O0 -g -D_DEBUG"
   AC_COMPILE_IFELSE(
     [AC_LANG_SOURCE([int foo;])],
-    [debug_cflags="-Og -g -D_DEBUG"],
+    [debug_cflags="-O0 -g -D_DEBUG"],
     [debug_cflags="-g -D_DEBUG"])
 fi
 
