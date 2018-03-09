@@ -21,7 +21,7 @@ ifeq ($(OS),osx)
 endif
 
 ifeq ($(OS),linux)
-  ifeq ($(TARGET_PLATFORM),$(filter $(TARGET_PLATFORM),raspberry-pi aml gbm))
+  ifeq ($(TARGET_PLATFORM),$(filter $(TARGET_PLATFORM),raspberry-pi aml gbm steamlink))
     NATIVE += meson-native ninja-native python3-native
   endif
 endif

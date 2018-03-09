@@ -20,29 +20,30 @@
 
 #include "WinSystemSteamLink.h"
 #include "cores/AudioEngine/Sinks/steamlink/AESinkSteamLink.h"
-#include "guilib/GraphicContext.h"
-#include "powermanagement/linux/LinuxPowerSyscall.h"
+#include "platform/linux/input/LibInputHandler.h"
+#include "platform/linux/powermanagement/LinuxPowerSyscall.h"
 #include "settings/DisplaySettings.h"
 #include "utils/log.h"
-#include "utils/StringUtils.h"
-#include "windowing/WinEventsLinux.h"
+#include "windowing/GraphicContext.h"
 
 #include <algorithm>
 
 using namespace KODI;
 using namespace STEAMLINK;
 
-CWinSystemSteamLink::CWinSystemSteamLink()
+CWinSystemSteamLink::CWinSystemSteamLink() :
+  m_libinput(new CLibInputHandler)
 {
-  // Initialize CWinSystemBase
-  m_winEvents.reset(new CWinEventsLinux);
-
   // Initialize AudioEngine
   CAESinkSteamLink::Register();
 
   // Initialize power management
   CLinuxPowerSyscall::Register();
+
+  m_libinput->Start();
 }
+
+CWinSystemSteamLink::~CWinSystemSteamLink() = default;
 
 bool CWinSystemSteamLink::InitWindowSystem()
 {
@@ -120,31 +121,12 @@ void CWinSystemSteamLink::UpdateResolutions()
 {
   CWinSystemBase::UpdateResolutions();
 
-  CDisplaySettings::GetInstance().ClearCustomResolutions();
-
   int width = 0;
   int height = 0;
   SDL_GetWindowSize(m_window, &width, &height);
 
-  RESOLUTION_INFO res{};
-
-  CGraphicContext::ResetOverscan(res);
-
-  res.bFullScreen = true;
-  res.iScreen = 0;
-  res.iWidth = width;
-  res.iHeight = height;
-  res.iScreenWidth = width;
-  res.iScreenHeight = height;
-  res.iSubtitles = static_cast<int>(0.965 * res.iHeight);
-  res.dwFlags = D3DPRESENTFLAG_PROGRESSIVE;
-  res.fPixelRatio = 1.0f;
-  res.fRefreshRate = 59.94;
-  res.strMode = StringUtils::Format("%dx%d @ %.2fp", res.iWidth, res.iHeight, res.fRefreshRate);
-
-  CDisplaySettings::GetInstance().AddResolutionInfo(res);
-
-  CDisplaySettings::GetInstance().ApplyCalibrations();
+  RESOLUTION_INFO& desktopRes = CDisplaySettings::GetInstance().GetResolutionInfo(RES_DESKTOP);
+  UpdateDesktopResolution(desktopRes, 0, width, height, 59.94, D3DPRESENTFLAG_PROGRESSIVE);
 }
 
 void CWinSystemSteamLink::Register(IDispResource *resource)
