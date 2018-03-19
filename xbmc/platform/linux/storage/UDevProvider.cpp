@@ -32,6 +32,9 @@ extern "C" {
 
 static const char *get_mountpoint(const char *devnode)
 {
+  if (!devnode)
+    return NULL;
+
   static char buf[4096];
   const char *delim = " ";
   const char *mountpoint = NULL;
