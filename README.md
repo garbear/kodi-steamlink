@@ -22,7 +22,7 @@ Kodi may crash when launched from the Steam Link homescreen due to a PulseAudio 
 1. Create a non-empty file on the USB drive at `steamlink/config/system/enable_ssh.txt`
 2. Insert the drive and power on the Steam Link
 3. SSH into the Steam Link as root using an SSH client, e.g. `ssh root@10.0.0.103`
-4. The password is `steamlink`
+4. The password is `steamlink123`
 
 #### Changing Steam Link builds
 
