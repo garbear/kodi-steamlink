@@ -39,6 +39,7 @@ public:
   virtual ~CWinSystemSteamLinkGLESContext() = default;
 
   // implementation of CWinSystemBase via CWinSystemSteamLink
+  CRenderSystemBase *GetRenderSystem() override { return this; }
   bool InitWindowSystem() override;
   bool DestroyWindowSystem() override;
   bool CreateNewWindow(const std::string& name, bool fullScreen, RESOLUTION_INFO& res) override;
