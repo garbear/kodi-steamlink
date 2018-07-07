@@ -41,3 +41,4 @@ addons/metadata.common.themoviedb.org/*
 addons/metadata.themoviedb.org/*
 addons/metadata.tvdb.com/*
 addons/kodi.vfs/*
+addons/peripheral.joystick/*
