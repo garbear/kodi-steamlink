@@ -578,7 +578,7 @@ ssize_t CSMBFile::Write(const void* lpBuf, size_t uiBufSize)
   // lpBuf can be safely casted to void* since xbmc_write will only read from it.
   CSingleLock lock(smb);
 
-  return  smbc_write(m_fd, lpBuf, uiBufSize);
+  return  smbc_write(m_fd, const_cast<void*>(lpBuf), uiBufSize);
 }
 
 bool CSMBFile::Delete(const CURL& url)
