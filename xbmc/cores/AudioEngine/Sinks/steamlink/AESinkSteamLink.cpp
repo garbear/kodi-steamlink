@@ -86,7 +86,7 @@ bool CAESinkSteamLink::Initialize(AEAudioFormat &format, std::string &device)
 
   m_startTimeSecs = 0.0; // Set in first call to AddPackets()
   m_framesSinceStart = 0;
-  
+
   format.m_dataFormat    = AE_FMT_S16NE;
   format.m_sampleRate    = SL_SAMPLE_RATE;
   format.m_frames        = format.m_sampleRate * SINK_FEED_MS / 1000;
