@@ -54,7 +54,6 @@ public:
   virtual bool Configure(const VideoPicture &picture, float fps, unsigned int orientation) = 0;
   virtual bool IsConfigured() = 0;
   virtual void AddVideoPicture(const VideoPicture &picture, int index) = 0;
-  virtual bool IsPictureHW(const VideoPicture &picture) { return false; };
   virtual void UnInit() = 0;
   virtual bool Flush(bool saveBuffers) { return false; };
   virtual void SetBufferSize(int numBuffers) { }
