@@ -9,7 +9,6 @@
 #include "WinSystemSteamLink.h"
 #include "WinEventsSteamLink.h"
 #include "cores/AudioEngine/Sinks/steamlink/AESinkSteamLink.h"
-#include "platform/linux/input/LibInputHandler.h"
 #include "platform/linux/powermanagement/LinuxPowerSyscall.h"
 #include "settings/DisplaySettings.h"
 #include "utils/log.h"
@@ -20,16 +19,13 @@
 using namespace KODI;
 using namespace STEAMLINK;
 
-CWinSystemSteamLink::CWinSystemSteamLink() :
-  m_libinput(new CLibInputHandler)
+CWinSystemSteamLink::CWinSystemSteamLink()
 {
   // Initialize AudioEngine
   CAESinkSteamLink::Register();
 
   // Initialize power management
   CLinuxPowerSyscall::Register();
-
-  m_libinput->Start();
 }
 
 CWinSystemSteamLink::~CWinSystemSteamLink() = default;
