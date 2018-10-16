@@ -2020,7 +2020,7 @@
         <setting id="gamesgeneral.enable" type="boolean">
           <visible>false</visible>
           <level>0</level>
-          <default>true</default>
+          <default>false</default>
           <control type="toggle" />
         </setting>
         <setting id="gamesgeneral.showosdhelp" type="boolean">
