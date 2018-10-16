@@ -8,8 +8,7 @@ endif()
 
 if(CORE_PLATFORM_NAME_LC STREQUAL rbpi OR
    CORE_PLATFORM_NAME_LC STREQUAL gbm OR
-   CORE_PLATFORM_NAME_LC STREQUAL aml OR
-   CORE_PLATFORM_NAME_LC STREQUAL steamlink)
+   CORE_PLATFORM_NAME_LC STREQUAL aml)
   if(LIBINPUT_FOUND)
     list(APPEND SOURCES LibInputHandler.cpp
                         LibInputKeyboard.cpp

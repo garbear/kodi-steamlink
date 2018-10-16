@@ -18,7 +18,6 @@
 
 #include <vector>
 
-class CLibInputHandler;
 class IDispResource;
 
 namespace KODI
@@ -58,9 +57,6 @@ protected:
   // Display resources
   CCriticalSection m_resourceSection;
   std::vector<IDispResource*>  m_resources;
-
-  // Input properties
-  std::unique_ptr<CLibInputHandler> m_libinput;
 };
 
 }
