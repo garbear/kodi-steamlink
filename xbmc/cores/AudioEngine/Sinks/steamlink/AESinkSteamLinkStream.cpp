@@ -178,13 +178,15 @@ void CAESinkSteamLinkStream::Process()
 
 void CAESinkSteamLinkStream::Announce(ANNOUNCEMENT::AnnouncementFlag flag, const char *sender, const char *message, const CVariant &data)
 {
-  if (flag == ANNOUNCEMENT::Player && strcmp(sender, "xbmc") == 0)
+  if ((flag & ANNOUNCEMENT::Player) && strcmp(sender, "xbmc") == 0)
   {
     if (strcmp(message, "OnPlay") == 0 ||
         strcmp(message, "OnPause") == 0 ||
         strcmp(message, "OnStop") == 0 ||
         strcmp(message, "OnSpeedChanged") == 0 ||
-        strcmp(message, "OnSeek") == 0)
+        strcmp(message, "OnSeek") == 0 ||
+        strcmp(message, "OnAVStart") == 0 ||
+        strcmp(message, "OnAVChange") == 0)
     {
       Flush();
     }
