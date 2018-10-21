@@ -34,7 +34,10 @@ CRendererSteamLink::~CRendererSteamLink()
 
 CBaseRenderer* CRendererSteamLink::Create(CVideoBuffer* buffer)
 {
-  return new CRendererSteamLink();
+  if (dynamic_cast<CSteamLinkVideoBuffer*>(buffer) != nullptr)
+    return new CRendererSteamLink();
+
+  return nullptr;
 }
 
 void CRendererSteamLink::Register()
