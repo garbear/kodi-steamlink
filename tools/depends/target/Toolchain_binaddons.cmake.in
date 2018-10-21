@@ -85,7 +85,6 @@ if(CORE_PLATFORM_NAME STREQUAL steamlink)
   list(APPEND CMAKE_FIND_ROOT_PATH @use_toolchain@/../rootfs)
   list(APPEND CMAKE_LIBRARY_PATH @use_toolchain@/../rootfs/lib)
   list(APPEND CMAKE_INCLUDE_PATH @use_toolchain@/../rootfs/include)
-  set(CMAKE_POSITION_INDEPENDENT_CODE ON)
 endif()
 
 set(CMAKE_C_FLAGS "@platform_cflags@ @platform_includes@")
