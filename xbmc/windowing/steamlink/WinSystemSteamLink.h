@@ -25,6 +25,8 @@ namespace KODI
 namespace STEAMLINK
 {
 
+class CSteamLinkPerformance;
+
 class CWinSystemSteamLink : public CWinSystemBase
 {
 public:
@@ -57,6 +59,9 @@ protected:
   // Display resources
   CCriticalSection m_resourceSection;
   std::vector<IDispResource*>  m_resources;
+
+  // Performance statistics
+  std::unique_ptr<CSteamLinkPerformance> m_performance;
 };
 
 }

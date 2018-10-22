@@ -7,6 +7,7 @@
  */
 
 #include "WinSystemSteamLink.h"
+#include "SteamLinkPerformance.h"
 #include "WinEventsSteamLink.h"
 #include "cores/AudioEngine/Sinks/steamlink/AESinkSteamLink.h"
 #include "platform/linux/powermanagement/LinuxPowerSyscall.h"
@@ -64,11 +65,17 @@ bool CWinSystemSteamLink::InitWindowSystem()
 
   m_winEvents.reset(new CWinEventsSteamLink());
 
+  // Initialize performance statistics
+  m_performance.reset(new CSteamLinkPerformance);
+
   return CWinSystemBase::InitWindowSystem();
 }
 
 bool CWinSystemSteamLink::DestroyWindowSystem()
 {
+  // Deinitialize performance statistics
+  m_performance.reset();
+
   m_winEvents.reset();
 
   m_nativeWindow = nullptr;

@@ -1,9 +1,11 @@
 set(SOURCES GLContextEGL.cpp
+            SteamLinkPerformance.cpp
             WinEventsSteamLink.cpp
             WinSystemSteamLink.cpp
 )
 
 set(HEADERS GLContextEGL.h
+            SteamLinkPerformance.h
             WinEventsSteamLink.h
             WinSystemSteamLink.h
 )
